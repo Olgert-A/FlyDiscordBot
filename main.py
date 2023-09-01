@@ -13,7 +13,7 @@ def main():
 
     @commands.command(name='хофик')
     async def cmd_hofik(ctx):
-        await ctx.message.reply(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
+        await ctx.message.reply(f"Сегодня ты хофик на {random.randint(0, 100)}%!!!")
 
     client.add_command(cmd_hofik)
     client.run(os.getenv("DISCORD_TOKEN"))
