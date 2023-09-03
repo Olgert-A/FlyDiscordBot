@@ -1,7 +1,7 @@
 import os
-import random
 import discord
 from discord.ext import commands
+from commands.register import to_use
 
 
 def main():
@@ -11,11 +11,8 @@ def main():
     async def on_ready():
         print(f"{client.user.name} connected.")
 
-    @commands.command(name='хофик')
-    async def cmd_hofik(ctx):
-        await ctx.message.reply(f"Сегодня ты хофик на {random.randint(0, 100)}%!!!")
-
-    client.add_command(cmd_hofik)
+    for cmd in to_use:
+        client.add_command(cmd)
     client.run(os.getenv("DISCORD_TOKEN"))
 
 
