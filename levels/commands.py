@@ -20,9 +20,18 @@ def phrase(points):
 def convert_points(points):
     return points / 50.
 
+
+def random_points():
+    return random.randint(-10, 10)
+
+
 @commands.command(name='лвл_рег')
 async def cmd_levels_reg(ctx):
     LevelsDB().channel_reg(ctx.channel.id)
+    for m in ctx.channel.members:
+        if not m.bot:
+            LevelsDB().points_add(ctx.channel.id, m.id, random_points())
+
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
     !ебырь - вывод твоего уровня 
