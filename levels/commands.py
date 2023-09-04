@@ -67,11 +67,14 @@ async def cmd_levels_table(ctx):
 
     members = {m.id: name(m) for m in ctx.channel.members if not m.bot}
     table = LevelsDB().points_table(ctx.channel.id)
+
     if not table:
         await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
         return
 
+    table = sorted(table.items(), key=lambda v: v[1], reverse=True)
+
     points = [f"{i}. {name}: {convert_points(v)} см."
-              for i, (p, v) in enumerate(table.items())
+              for i, (p, v) in enumerate(table)
               if (name := members.get(p))]
     await ctx.message.reply('\n'.join(points))
