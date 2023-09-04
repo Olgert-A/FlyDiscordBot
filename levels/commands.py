@@ -46,7 +46,7 @@ def convert_points(points):
 
 
 def random_points():
-    return random.randint(-10, 10)
+    return random.randint(-6, 10)
 
 
 @commands.command(name='лвл_рег')
