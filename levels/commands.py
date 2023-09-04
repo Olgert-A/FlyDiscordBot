@@ -40,6 +40,7 @@ async def cmd_levels_stop(ctx):
 async def cmd_levels_points(ctx):
     if not (points := LevelsDB().points_get(ctx.channel.id, ctx.author.id)):
         await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
+        return
 
     points = convert_points(points)
     await ctx.message.reply(f"У тебя {points} см. " + phrase(points))
@@ -59,6 +60,7 @@ async def cmd_levels_table(ctx):
     table = LevelsDB().points_table(ctx.channel.id)
     if not table:
         await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
+        return
 
     points = [f"{i}. {name}: {convert_points(v)} см."
               for i, (p, v) in enumerate(table.items())
