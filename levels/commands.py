@@ -54,7 +54,7 @@ async def cmd_levels_reg(ctx):
     LevelsDB().channel_reg(ctx.channel.id)
     for m in ctx.channel.members:
         if not m.bot:
-            LevelsDB().points_add(ctx.channel.id, m.id, random_points())
+            LevelsDB().points_add(ctx.channel.id, m.id, 0)
 
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
