@@ -40,6 +40,8 @@ def phrase(points):
         if start <= points < end:
             return random.choice(v)
 
+    return ""
+
 
 def convert_points(points):
     return points / 100.
