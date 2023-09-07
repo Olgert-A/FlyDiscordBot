@@ -1,6 +1,6 @@
 import random
 from discord.ext import commands
-from levels.db import LevelsDB
+from levels.db.current import get_db
 
 
 def phrase(points):
@@ -51,10 +51,10 @@ def random_points():
 
 @commands.command(name='лвл_рег')
 async def cmd_levels_reg(ctx):
-    LevelsDB().channel_reg(ctx.channel.id)
+    get_db().channel_reg(ctx.channel.id)
     for m in ctx.channel.members:
         if not m.bot:
-            LevelsDB().points_add(ctx.channel.id, m.id, 0)
+            get_db().points_add(ctx.channel.id, m.id, 0)
 
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
@@ -64,14 +64,14 @@ async def cmd_levels_reg(ctx):
 
 @commands.command(name='лвл_стоп')
 async def cmd_levels_stop(ctx):
-    LevelsDB().channel_unreg(ctx.channel.id)
+    get_db().channel_unreg(ctx.channel.id)
     await ctx.message.delete()
     await ctx.channel.send(f"Канал больше не участвует в программе **Ебырьметр**")
 
 
 @commands.command(name='ебырь')
 async def cmd_levels_points(ctx):
-    if not (points := LevelsDB().points_get(ctx.channel.id, ctx.author.id)):
+    if not (points := get_db().points_get(ctx.channel.id, ctx.author.id)):
         await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
         return
 
@@ -90,7 +90,7 @@ async def cmd_levels_table(ctx):
             return member.name
 
     members = {m.id: name(m) for m in ctx.channel.members if not m.bot}
-    table = LevelsDB().points_table(ctx.channel.id)
+    table = get_db().points_table(ctx.channel.id)
 
     if not table:
         await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")

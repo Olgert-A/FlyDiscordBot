@@ -1,13 +1,15 @@
 import sqlite3
+from levels.db.abstract import AbstractLevelsDB
 
 
-class LevelsDB:
+class SqliteDb(AbstractLevelsDB):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(LevelsDB, cls).__new__(cls)
+            cls.instance = super(SqliteDb, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self):
+    def __init__(self, database_url):
+        super().__init__(database_url)
         self._connection = sqlite3.connect('levels.db')
         self._cursor = self._connection.cursor()
         self._channels_create()
@@ -74,8 +76,8 @@ class LevelsDB:
         return dict(self._cursor.fetchall())
 
 
-def main():
-    db = LevelsDB()
+def sqlite():
+    db = SqliteDb()
     db.channel_reg(123)
     db.points_add(123, 4444, 5)
     print(db.channels_list())
@@ -85,4 +87,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    sqlite()

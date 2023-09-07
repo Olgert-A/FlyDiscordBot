@@ -2,7 +2,7 @@ import os
 import discord
 from discord.ext import commands
 from commands.register import to_use
-from levels.db import LevelsDB
+from levels.db.current import get_db
 from levels.commands import random_points
 
 
@@ -18,7 +18,7 @@ def main():
         await client.process_commands(message)
 
         if not message.author.bot:
-            LevelsDB().points_add(message.channel.id, message.author.id, random_points())
+            get_db().points_add(message.channel.id, message.author.id, random_points())
 
     for cmd in to_use:
         client.add_command(cmd)
