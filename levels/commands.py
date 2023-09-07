@@ -74,7 +74,7 @@ async def cmd_levels_stop(ctx):
 @commands.command(name='ебырь')
 async def cmd_levels_points(ctx):
     if not (points := get_db().points_get(ctx.channel.id, ctx.author.id)):
-        await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
+        await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
         return
 
     points = convert_points(points)
@@ -95,7 +95,7 @@ async def cmd_levels_table(ctx):
     table = get_db().points_table(ctx.channel.id)
 
     if not table:
-        await ctx.message.reply(f"Канал не зарегистрирован в программе **Ебырьметр**")
+        await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
         return
 
     table = sorted(table.items(), key=lambda v: v[1], reverse=True)

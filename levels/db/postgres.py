@@ -1,8 +1,10 @@
 import os
+import logging
 import psycopg
 from psycopg import rows
 from levels.db.abstract import AbstractLevelsDB
 
+logging.basicConfig(level=logging.INFO)
 
 class PostgresDb(AbstractLevelsDB):
     def __init__(self, database_url):
@@ -48,14 +50,21 @@ class PostgresDb(AbstractLevelsDB):
 
     def points_get(self, channel_id, user_id):
         with psycopg.connect(self.DATABASE_URL) as c:
+            logging.info(f"User {user_id} request points in channel {channel_id}")
+
             c.row_factory = lambda cursor: lambda row: row[0]
-            res = c.execute(
-                """SELECT points FROM stats
-                WHERE user_id = %s
-                AND reg_id = (SELECT id FROM channels WHERE channel_id = %s)""",
-                (user_id, channel_id)
-                            ).fetchone()
-            c.row_factory = None
+            try:
+                res = c.execute(
+                    """SELECT points FROM stats
+                    WHERE user_id = %s
+                    AND reg_id = (SELECT id FROM channels WHERE channel_id = %s)""",
+                    (user_id, channel_id)
+                                ).fetchone()
+            except psycopg.Error as e:
+                logging.error(f"Get points raise exception: {e}")
+                return
+            finally:
+                c.row_factory = None
             print(res)
             return res
 
