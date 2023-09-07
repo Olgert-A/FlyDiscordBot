@@ -25,7 +25,7 @@ def phrase(points):
                     "Такой размер пытаются компенсировать рейтингом в онлайн игре, но ты и там не преуспел.",
                     "Когда ты заходишь в общественный туалет, что тебя напрягает больше - что у школьника член в расслабленном состоянии больше, чем твой в стоячем, или что у тебя стоит на школьника?",
                     "Не размер маленький, а ладони большие."],
-               (20, 30): ["Неплохо, но можно лучше.",
+               (20, 50): ["Неплохо, но можно лучше.",
                           "Ты, кажется, находишься наверху списка ебырей района, но это не точно.",
                           "Продолжай наращивать и скоро сможешь складывать вдвое.",
                           "Середнячок. Не повод для гордости, не причина для грусти.",
@@ -42,14 +42,14 @@ def phrase(points):
 
 
 def convert_points(points):
-    return points / 20.
+    return points / 100.
 
 
 def random_points():
     return random.randint(-6, 10)
 
 
-@commands.command(name='лвл_рег')
+@commands.command(name='лвл-рег')
 async def cmd_levels_reg(ctx):
     get_db().channel_reg(ctx.channel.id)
     for m in ctx.channel.members:
@@ -62,7 +62,7 @@ async def cmd_levels_reg(ctx):
     !ебыри - таблица уровней""")
 
 
-@commands.command(name='лвл_стоп')
+@commands.command(name='лвл-стоп')
 async def cmd_levels_stop(ctx):
     get_db().channel_unreg(ctx.channel.id)
     await ctx.message.delete()
