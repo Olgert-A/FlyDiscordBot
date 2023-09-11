@@ -1,7 +1,7 @@
 import random
 import logging
 from discord.ext import commands
-from levels.db.current import get_db
+from levels.db.current import get_db, get_uses_db
 
 
 def phrase(points):
@@ -58,6 +58,7 @@ async def cmd_levels_reg(ctx):
     for m in ctx.channel.members:
         if not m.bot:
             get_db().points_add(ctx.channel.id, m.id, 0)
+            get_uses_db().add(ctx.channel.id, m.id, 0)
 
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
@@ -108,15 +109,22 @@ async def cmd_levels_table(ctx):
 
 
 @commands.command(name='выебать')
-async def cmd_levels_kick(ctx, target):
-    logging.info(target)
+async def cmd_levels_kick(ctx, target=None):
+    uses = get_uses_db().get(ctx.channel.id, ctx.author.id)
+
+    if uses >= 5:
+        await ctx.message.reply("Ты уже выебал 5 раз сегодня, с тебя хватит!")
+        return
 
     def get_target_id():
-        if not target:
-            return
-        for m in ctx.channel.members:
-            if str(m.id) in target:
-                return m.id
+        members = [m for m in ctx.channel.members if not m.bot]
+        if target:
+            # if m.id in target return m.id else return None
+            for m in members:
+                if str(m.id) in target:
+                    return m.id
+        else:
+            return random.choice(members).id
 
     def get_points(member_id):
         return get_db().points_get(ctx.channel.id, member_id)
@@ -125,23 +133,15 @@ async def cmd_levels_kick(ctx, target):
         await ctx.message.reply("Тегни цель, еблан")
         return
 
-    pts = abs(get_points(ctx.author.id) - get_points(target_id))
-    logging.info(pts)
-
-    repeats = random.randint(1, 10)
-    pts_up = 0
-
-    for _ in range(repeats):
-        pts_up += random.randint(-pts, pts)
-
-    logging.info(pts_up)
-    pts_up /= repeats
-    logging.info(f"{repeats}: {pts_up}")
-
-    #pts_up = pts_up * random.randint(35, 100) / 100
+    author_pts = get_points(ctx.author.id)
+    target_pts = get_points(target_id)
+    pts = random.randint(0, abs(author_pts - target_pts))
+    chance = random.randint(-author_pts, target_pts) / max([author_pts, target_pts])
+    pts_up = int(pts * chance)
 
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
     get_db().points_add(ctx.channel.id, target_id, -pts_up)
-    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {repeats} фрикций, "
+    get_uses_db().add(ctx.channel.id, ctx.author.id, 1)
+    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
                             f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up):.2f} см.")
 
