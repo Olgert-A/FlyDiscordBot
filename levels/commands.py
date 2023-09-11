@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 from levels.db.current import get_db
 
-logging.basicConfig(level=logging.INFO)
+
 def phrase(points):
     phrases = {(-1000, 0): ["Отрицательный? Ты точно мужик?",
                             "Как вообще можно отрастить минусовой член?",
@@ -143,5 +143,5 @@ async def cmd_levels_kick(ctx, target):
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
     get_db().points_add(ctx.channel.id, target_id, -pts_up)
     await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {repeats} фрикций, "
-                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up)} см.")
+                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up):.2f} см.")
 
