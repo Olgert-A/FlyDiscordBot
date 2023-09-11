@@ -109,6 +109,8 @@ async def cmd_levels_table(ctx):
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, target):
     def get_target_id():
+        if not target:
+            return
         for m in ctx.channel.members:
             if m.id in target:
                 return m.id
@@ -117,6 +119,7 @@ async def cmd_levels_kick(ctx, target):
         return get_db().points_get(ctx.channel.id, member_id)
 
     if not (target_id := get_target_id()):
+        await ctx.message.reply("Тегни цель, еблан")
         return
 
     pts = [get_points(ctx.author.id),
@@ -129,6 +132,7 @@ async def cmd_levels_kick(ctx, target):
         pts_up += random.randint(-min(pts), max(pts))
 
     pts_up /= repeats
+    #pts_up = pts_up * random.randint(0, 100) / 100
 
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
     get_db().points_add(ctx.channel.id, target_id, -pts_up)
