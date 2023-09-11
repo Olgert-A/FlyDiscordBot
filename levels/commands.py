@@ -143,5 +143,5 @@ async def cmd_levels_kick(ctx, target=None):
     get_db().points_add(ctx.channel.id, target_id, -pts_up)
     get_uses_db().update(ctx.channel.id, ctx.author.id, 1)
     await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
-                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up):.2f} см.")
+                            f"получив {convert_points(pts_up):.2f} см.")
 
