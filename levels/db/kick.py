@@ -25,7 +25,7 @@ class KickDb:
                             UNIQUE(reg_id, user_id)
                             );""")
 
-    def set(self, channel_id, user_id, uses):
+    def update(self, channel_id, user_id, uses):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""INSERT INTO kicks(reg_id, user_id, uses)
             SELECT id, %s, %s FROM channels 
