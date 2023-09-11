@@ -1,8 +1,9 @@
 import random
+import logging
 from discord.ext import commands
 from levels.db.current import get_db
 
-
+logging.basicConfig(level=logging.INFO)
 def phrase(points):
     phrases = {(-1000, 0): ["Отрицательный? Ты точно мужик?",
                             "Как вообще можно отрастить минусовой член?",
@@ -108,6 +109,8 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, target):
+    logging.info(target)
+
     def get_target_id():
         if not target:
             return
@@ -124,6 +127,7 @@ async def cmd_levels_kick(ctx, target):
 
     pts = [get_points(ctx.author.id),
            get_points(target_id)]
+    logging.info(pts)
 
     repeats = random.randint(1, 10)
     pts_up = 0
@@ -132,6 +136,8 @@ async def cmd_levels_kick(ctx, target):
         pts_up += random.randint(-min(pts), max(pts))
 
     pts_up /= repeats
+    logging.info(f"{repeats}: {pts_up}")
+    
     #pts_up = pts_up * random.randint(0, 100) / 100
 
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
