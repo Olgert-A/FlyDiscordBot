@@ -115,7 +115,7 @@ async def cmd_levels_kick(ctx, target):
         if not target:
             return
         for m in ctx.channel.members:
-            if m.id in target:
+            if str(m.id) in target:
                 return m.id
 
     def get_points(member_id):
@@ -137,7 +137,7 @@ async def cmd_levels_kick(ctx, target):
 
     pts_up /= repeats
     logging.info(f"{repeats}: {pts_up}")
-    
+
     #pts_up = pts_up * random.randint(0, 100) / 100
 
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
