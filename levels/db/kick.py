@@ -31,7 +31,7 @@ class KickDb:
             SELECT id, %s, %s FROM channels 
             WHERE channel_id = %s
             ON CONFLICT(reg_id, user_id) 
-            DO UPDATE SET uses = stats.uses + excluded.uses;""", (user_id, channel_id, uses))
+            DO UPDATE SET uses = stats.uses + excluded.uses;""", (user_id, uses, channel_id))
 
     def get(self, channel_id, user_id):
         with psycopg.connect(self.DATABASE_URL) as c:
