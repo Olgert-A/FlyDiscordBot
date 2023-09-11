@@ -125,16 +125,16 @@ async def cmd_levels_kick(ctx, target):
         await ctx.message.reply("Тегни цель, еблан")
         return
 
-    pts = [get_points(ctx.author.id),
-           get_points(target_id)]
+    pts = abs(get_points(ctx.author.id) - get_points(target_id))
     logging.info(pts)
 
     repeats = random.randint(1, 10)
     pts_up = 0
 
     for _ in range(repeats):
-        pts_up += random.randint(-min(pts), max(pts))
+        pts_up += random.randint(-pts, pts)
 
+    logging.info(pts_up)
     pts_up /= repeats
     logging.info(f"{repeats}: {pts_up}")
 
@@ -142,6 +142,6 @@ async def cmd_levels_kick(ctx, target):
 
     get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
     get_db().points_add(ctx.channel.id, target_id, -pts_up)
-    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {repeats} фрикций {pts_up}, "
-                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up)}")
+    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {repeats} фрикций, "
+                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up)} см.")
 
