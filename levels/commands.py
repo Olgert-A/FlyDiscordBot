@@ -104,3 +104,34 @@ async def cmd_levels_table(ctx):
               for i, (p, v) in enumerate(table)
               if (name := members.get(p))]
     await ctx.message.reply('\n'.join(points))
+
+
+@commands.command(name='выебать')
+async def cmd_levels_kick(ctx, target):
+    def get_target_id():
+        for m in ctx.channel.members:
+            if m.id in target:
+                return m.id
+
+    def get_points(member_id):
+        return get_db().points_get(ctx.channel.id, member_id)
+
+    if not (target_id := get_target_id()):
+        return
+
+    pts = [get_points(ctx.author.id),
+           get_points(target_id)]
+
+    repeats = random.randint(1, 10)
+    pts_up = 0
+
+    for _ in range(repeats):
+        pts_up += random.randint(-min(pts), max(pts))
+
+    pts_up /= repeats
+
+    get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
+    get_db().points_add(ctx.channel.id, target_id, -pts_up)
+    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {repeats} фрикций {pts_up}, "
+                            f"{'получив' if pts_up >= 0 else 'потеряв'} {convert_points(pts_up)}")
+
