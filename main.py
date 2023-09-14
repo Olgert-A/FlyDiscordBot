@@ -6,6 +6,8 @@ from commands.register import to_use
 from db.current import get_db, get_uses_db
 from levels.commands import random_points
 
+utc = datetime.timezone.utc
+
 
 def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
@@ -15,7 +17,8 @@ def main():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
 
-    @tasks.loop(hours=12, time=datetime.time(hour=13))
+    @tasks.loop(time=[datetime.time(hour=1, tzinfo=utc),
+                      datetime.time(hour=13, tzinfo=utc)])
     async def kicks_daily_clear():
         uses_db = get_uses_db()
         uses_db.clear()
