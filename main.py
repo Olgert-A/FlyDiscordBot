@@ -17,8 +17,8 @@ def main():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
 
-    @tasks.loop(time=[datetime.time(hour=1, tzinfo=utc),
-                      datetime.time(hour=13, tzinfo=utc)])
+    @tasks.loop(time=[datetime.time(hour=3, tzinfo=utc),
+                      datetime.time(hour=15, tzinfo=utc)])
     async def kicks_daily_clear():
         uses_db = get_uses_db()
         uses_db.clear()

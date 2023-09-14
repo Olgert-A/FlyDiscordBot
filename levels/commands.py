@@ -112,7 +112,7 @@ async def cmd_levels_kick(ctx, target=None):
     uses = get_uses_db().get(ctx.channel.id, ctx.author.id)
 
     if uses and uses >= 3:
-        await ctx.message.reply("Ты уже выебал 5 раз сегодня, с тебя хватит!")
+        await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
         return
 
     def get_target_id():
