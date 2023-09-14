@@ -1,14 +1,10 @@
 from abc import ABC, abstractmethod
+from db.singleton import SingletonDB
 
 
-class AbstractLevelsDB(ABC):
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(AbstractLevelsDB, cls).__new__(cls)
-        return cls.instance
-
+class AbstractLevelsDB(ABC, SingletonDB):
     def __init__(self, database_url):
-        self.DATABASE_URL = database_url
+        super().__init__(database_url)
 
     @abstractmethod
     def _channels_create(self): pass
@@ -30,11 +26,3 @@ class AbstractLevelsDB(ABC):
 
     @abstractmethod
     def points_table(self, channel_id): pass
-
-
-
-
-
-
-
-

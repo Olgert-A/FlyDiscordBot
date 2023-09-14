@@ -1,8 +1,9 @@
 import os
 import discord
+import datetime
 from discord.ext import commands, tasks
 from commands.register import to_use
-from levels.db.current import get_db, get_uses_db
+from db.current import get_db, get_uses_db
 from levels.commands import random_points
 
 
@@ -14,7 +15,7 @@ def main():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
 
-    @tasks.loop(hours=24)
+    @tasks.loop(hours=12, time=datetime.time(hour=13))
     async def kicks_daily_clear():
         uses_db = get_uses_db()
         uses_db.clear()

@@ -1,12 +1,12 @@
 import os
 import logging
 import psycopg
-from psycopg import rows
-from levels.db.abstract import AbstractLevelsDB
+from db.interface.levels import AbstractLevelsDB
 
 logging.basicConfig(level=logging.INFO)
 
-class PostgresDb(AbstractLevelsDB):
+
+class LevelsDb(AbstractLevelsDB):
     def __init__(self, database_url):
         super().__init__(database_url)
         self._channels_create()

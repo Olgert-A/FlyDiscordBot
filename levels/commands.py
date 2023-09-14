@@ -1,7 +1,6 @@
 import random
-import logging
 from discord.ext import commands
-from levels.db.current import get_db, get_uses_db
+from db.current import get_db, get_uses_db
 
 
 def phrase(points):
@@ -112,7 +111,7 @@ async def cmd_levels_table(ctx):
 async def cmd_levels_kick(ctx, target=None):
     uses = get_uses_db().get(ctx.channel.id, ctx.author.id)
 
-    if uses and uses >= 5:
+    if uses and uses >= 3:
         await ctx.message.reply("Ты уже выебал 5 раз сегодня, с тебя хватит!")
         return
 
