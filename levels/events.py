@@ -62,5 +62,5 @@ class LevelEvents:
         cut = -random.randint(0, abs(pts))
         get_levels_db().points_add(channel_id, victim.id, cut)
 
-        report = (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
+        return (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
                   f"{LevelUtils.convert_points(-cut):.2f} см.")
