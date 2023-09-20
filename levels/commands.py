@@ -1,6 +1,6 @@
 import random
 from discord.ext import commands
-from db.current import get_db, get_uses_db
+from db.current import get_levels_db, get_kicks_db
 
 
 def phrase(points):
@@ -53,11 +53,11 @@ def random_points():
 
 @commands.command(name='лвл-рег')
 async def cmd_levels_reg(ctx):
-    get_db().channel_reg(ctx.channel.id)
+    get_levels_db().channel_reg(ctx.channel.id)
     for m in ctx.channel.members:
         if not m.bot:
-            get_db().points_add(ctx.channel.id, m.id, 0)
-            get_uses_db().update(ctx.channel.id, m.id, 0)
+            get_levels_db().points_add(ctx.channel.id, m.id, 0)
+            get_kicks_db().add(ctx.channel.id, m.id, 0)
 
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
@@ -67,14 +67,14 @@ async def cmd_levels_reg(ctx):
 
 @commands.command(name='лвл-стоп')
 async def cmd_levels_stop(ctx):
-    get_db().channel_unreg(ctx.channel.id)
+    get_levels_db().channel_reg_stop(ctx.channel.id)
     await ctx.message.delete()
     await ctx.channel.send(f"Канал больше не участвует в программе **Ебырьметр**")
 
 
 @commands.command(name='ебырь')
 async def cmd_levels_points(ctx):
-    if not (points := get_db().points_get(ctx.channel.id, ctx.author.id)):
+    if not (points := get_levels_db().points_get(ctx.channel.id, ctx.author.id)):
         await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
         return
 
@@ -93,7 +93,7 @@ async def cmd_levels_table(ctx):
             return member.name
 
     members = {m.id: name(m) for m in ctx.channel.members if not m.bot}
-    table = get_db().points_table(ctx.channel.id)
+    table = get_levels_db().points_table(ctx.channel.id)
 
     if not table:
         await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
@@ -109,7 +109,7 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, target=None):
-    uses = get_uses_db().get(ctx.channel.id, ctx.author.id)
+    uses = get_kicks_db().get(ctx.channel.id, ctx.author.id)
 
     if uses and uses >= 3:
         await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
@@ -126,7 +126,7 @@ async def cmd_levels_kick(ctx, target=None):
             return random.choice(members).id
 
     def get_points(member_id):
-        return get_db().points_get(ctx.channel.id, member_id)
+        return get_levels_db().points_get(ctx.channel.id, member_id)
 
     if not (target_id := get_target_id()):
         await ctx.message.reply("Тегни цель, еблан")
@@ -138,9 +138,9 @@ async def cmd_levels_kick(ctx, target=None):
     chance = random.randint(-author_pts, target_pts) / max([author_pts, target_pts])
     pts_up = int(pts * chance)
 
-    get_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
-    get_db().points_add(ctx.channel.id, target_id, -pts_up)
-    get_uses_db().update(ctx.channel.id, ctx.author.id, 1)
+    get_levels_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
+    get_levels_db().points_add(ctx.channel.id, target_id, -pts_up)
+    get_kicks_db().add(ctx.channel.id, ctx.author.id, 1)
     await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
                             f"получив {convert_points(pts_up):.2f} см.")
 

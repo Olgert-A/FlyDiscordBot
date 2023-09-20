@@ -36,9 +36,17 @@ class LevelsDb(AbstractLevelsDB):
                    VALUES (%s) 
                    ON CONFLICT(channel_id) DO NOTHING;""", (channel_id,))
 
-    def channel_unreg(self, channel_id):
+    def channel_reg_stop(self, channel_id):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("DELETE FROM channels WHERE channel_id = %s;", (channel_id,))
+
+    def points_set(self, channel_id, user_id, points):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO stats(reg_id, user_id, points)
+            SELECT id, %s, %s FROM channels 
+            WHERE channel_id = %s
+            ON CONFLICT(reg_id, user_id) 
+            DO UPDATE SET points = excluded.points;""", (user_id, points, channel_id))
 
     def points_add(self, channel_id, user_id, points):
         with psycopg.connect(self.DATABASE_URL) as c:

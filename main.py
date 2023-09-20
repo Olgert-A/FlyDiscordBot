@@ -3,7 +3,7 @@ import discord
 import datetime
 from discord.ext import commands, tasks
 from commands.register import to_use
-from db.current import get_db, get_uses_db
+from db.current import get_levels_db, get_kicks_db
 from levels.commands import random_points
 
 utc = datetime.timezone.utc
@@ -20,7 +20,7 @@ def main():
     @tasks.loop(time=[datetime.time(hour=3, tzinfo=utc),
                       datetime.time(hour=15, tzinfo=utc)])
     async def kicks_daily_clear():
-        uses_db = get_uses_db()
+        uses_db = get_kicks_db()
         uses_db.clear()
 
     @client.event
@@ -28,7 +28,7 @@ def main():
         await client.process_commands(message)
 
         if not message.author.bot:
-            get_db().points_add(message.channel.id, message.author.id, random_points())
+            get_levels_db().points_add(message.channel.id, message.author.id, random_points())
 
     for cmd in to_use:
         client.add_command(cmd)

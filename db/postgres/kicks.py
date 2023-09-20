@@ -1,17 +1,13 @@
 import psycopg
 import logging
+from db.interface.kicks import AbstractKicksDb
 
 logging.basicConfig(level=logging.INFO)
 
 
-class KickDb:
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(KickDb, cls).__new__(cls)
-        return cls.instance
-
+class KicksDb(AbstractKicksDb):
     def __init__(self, database_url):
-        self.DATABASE_URL = database_url
+        super().__init__(database_url)
         self._create()
 
     def _create(self):
@@ -25,7 +21,15 @@ class KickDb:
                             UNIQUE(reg_id, user_id)
                             );""")
 
-    def update(self, channel_id, user_id, uses):
+    def set(self, channel_id, user_id, uses):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO kicks(reg_id, user_id, uses)
+            SELECT id, %s, %s FROM channels 
+            WHERE channel_id = %s
+            ON CONFLICT(reg_id, user_id) 
+            DO UPDATE SET uses = excluded.uses;""", (user_id, uses, channel_id))
+
+    def add(self, channel_id, user_id, uses):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""INSERT INTO kicks(reg_id, user_id, uses)
             SELECT id, %s, %s FROM channels 
@@ -48,7 +52,6 @@ class KickDb:
                 return
             finally:
                 c.row_factory = None
-            print(res)
             return res
 
     def clear(self):
