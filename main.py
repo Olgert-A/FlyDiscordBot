@@ -4,7 +4,7 @@ import datetime
 from discord.ext import commands, tasks
 from commands.register import to_use
 from db.current import get_levels_db, get_kicks_db
-from levels.commands import random_points
+from levels.utils import LevelUtils
 
 utc = datetime.timezone.utc
 
@@ -28,7 +28,7 @@ def main():
         await client.process_commands(message)
 
         if not message.author.bot:
-            get_levels_db().points_add(message.channel.id, message.author.id, random_points())
+            get_levels_db().points_add(message.channel.id, message.author.id, LevelUtils.generate_points())
 
     for cmd in to_use:
         client.add_command(cmd)
