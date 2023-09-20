@@ -7,7 +7,8 @@ class LevelEvents:
     @staticmethod
     def get_events():
         return [LevelEvents.circle,
-                LevelEvents.all_to_one]
+                LevelEvents.all_to_one,
+                LevelEvents.cut]
 
     @staticmethod
     def circle(channel_id, members):
