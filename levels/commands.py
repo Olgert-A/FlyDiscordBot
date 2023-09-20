@@ -93,11 +93,13 @@ async def cmd_levels_kick(ctx, target=None):
 
 @commands.command(name='circle')
 async def circle(ctx):
-    report = Events.circle(ctx.channel.id, ctx.members)
+    members = [m for m in ctx.members if not m.bot]
+    report = Events.circle(ctx.channel.id, members)
     await ctx.message.reply(report)
 
 
 @commands.command(name='alltoone')
 async def alltoone(ctx):
-    report = Events.all_to_one(ctx.channel.id, ctx.members)
+    members = [m for m in ctx.members if not m.bot]
+    report = Events.all_to_one(ctx.channel.id, members)
     await ctx.message.reply(report)
