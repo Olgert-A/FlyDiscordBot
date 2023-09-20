@@ -51,12 +51,7 @@ class LevelEvents:
 
     @staticmethod
     def cut(channel_id, members):
-        victim = None
-        for m in members:
-            if m.nick == 'hof1k' or m.global_name == 'hof1k' or m.name == 'hof1k':
-                victim = m
-                break
-        #victim = random.choice(members)
+        victim = random.choice(members)
 
         pts = LevelUtils.get_points(channel_id, victim.id)
         cut = -random.randint(0, abs(pts))

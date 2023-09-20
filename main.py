@@ -1,12 +1,10 @@
 import os
 import discord
-import datetime
-from discord.ext import commands, tasks
+from discord.ext import commands
 from commands.register import to_use
-from db.current import get_levels_db, get_kicks_db
+from db.current import get_levels_db
 from levels.utils import LevelUtils
-
-utc = datetime.timezone.utc
+from levels.tasks import kicks_daily_clear
 
 
 def main():
@@ -16,12 +14,6 @@ def main():
     async def on_ready():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
-
-    @tasks.loop(time=[datetime.time(hour=3, tzinfo=utc),
-                      datetime.time(hour=15, tzinfo=utc)])
-    async def kicks_daily_clear():
-        uses_db = get_kicks_db()
-        uses_db.clear()
 
     @client.event
     async def on_message(message):

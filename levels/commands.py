@@ -3,6 +3,8 @@ from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db
 from levels.utils import LevelUtils as Utils
 from levels.events import LevelEvents as Events
+from levels.tasks import level_daily_event
+
 
 @commands.command(name='лвл-рег')
 async def cmd_levels_reg(ctx):
@@ -110,3 +112,8 @@ async def cut(ctx):
     members = [m for m in ctx.channel.members if not m.bot]
     report = Events.cut(ctx.channel.id, members)
     await ctx.message.reply(report)
+
+
+@commands.command(name='кто')
+async def who(ctx):
+    level_daily_event.start(ctx)
