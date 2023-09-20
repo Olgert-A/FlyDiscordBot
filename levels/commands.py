@@ -103,3 +103,10 @@ async def alltoone(ctx):
     members = [m for m in ctx.channel.members if not m.bot]
     report = Events.all_to_one(ctx.channel.id, members)
     await ctx.message.reply(report)
+
+
+@commands.command(name='cut')
+async def cut(ctx):
+    members = [m for m in ctx.channel.members if not m.bot]
+    report = Events.cut(ctx.channel.id, members)
+    await ctx.message.reply(report)

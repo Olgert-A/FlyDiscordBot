@@ -34,7 +34,7 @@ class LevelEvents:
         random.shuffle(members)
         victim = members[0]
         others = members[1:]
-        report = f"Все на одного!\nЖертва дня - <@{victim}>\n"
+        report = f"Все на одного!\nЖертва дня - <@{victim.id}>\n"
 
         victim_points = 0
         for author in others:
@@ -48,3 +48,19 @@ class LevelEvents:
 
         report += f"\nСуммарно жертва получила {LevelUtils.convert_points(victim_points):.2f} см."
         return report
+
+    @staticmethod
+    def cut(channel_id, members):
+        victim = None
+        for m in members:
+            if m.nick == 'hof1k' or m.global_name == 'hof1k' or m.name == 'hof1k':
+                victim = m
+                break
+        #victim = random.choice(members)
+
+        pts = LevelUtils.get_points(channel_id, victim.id)
+        cut = -random.randint(0, abs(pts))
+        get_levels_db().points_add(channel_id, victim.id, cut)
+
+        report = (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
+                  f"{LevelUtils.convert_points(-cut):.2f} см.")
