@@ -2,7 +2,7 @@ import random
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db
 from levels.utils import LevelUtils as Utils
-
+from levels.events import LevelEvents as Events
 
 @commands.command(name='лвл-рег')
 async def cmd_levels_reg(ctx):
@@ -90,3 +90,14 @@ async def cmd_levels_kick(ctx, target=None):
     await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
                             f"получив {Utils.convert_points(pts_up):.2f} см.")
 
+
+@commands.command(name='circle')
+async def circle(ctx):
+    report = Events.circle(ctx.channel.id, ctx.members)
+    await ctx.message.reply(report)
+
+
+@commands.command(name='alltoone')
+async def alltoone(ctx):
+    report = Events.all_to_one(ctx.channel.id, ctx.members)
+    await ctx.message.reply(report)
