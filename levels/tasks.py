@@ -16,7 +16,6 @@ async def kicks_daily_clear():
 
 @tasks.loop(minutes=1)
 async def level_daily_event(ctx):
-    await ctx.channel.send('\n'.join([m.name for m in ctx.channel.members]))
-
-    #event = random.choice(LevelEvents.get_events())
-    #event(channel_id, members)
+    event = random.choice(LevelEvents.get_events())
+    members = [m for m in ctx.channel.members if not m.bot]
+    event(ctx.channel.id, members)
