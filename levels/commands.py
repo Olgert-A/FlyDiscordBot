@@ -92,11 +92,15 @@ async def cmd_levels_kick(ctx, *args):
                 await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
                 return
 
-            pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
-            LevelKick.add_use(ctx.channel.id, ctx.author.id)
+            try:
+                pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+                LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
-            await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
-                                f"получив {LevelPoints.convert(pts):.2f} см.")
+                await ctx.message.reply(
+                    f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+                    f"получив {LevelPoints.convert(pts):.2f} см.")
+            except ValueError:
+                await ctx.message.reply('Не удалось выебать, тк разработчик бота пидор говнокодерский')
 
 
 @commands.command(name='args')

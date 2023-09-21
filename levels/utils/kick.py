@@ -18,6 +18,8 @@ class LevelKick:
     def calc(channel_id, author_id, target_id) -> int:
         author_pts = LevelPoints.get(channel_id, author_id)
         target_pts = LevelPoints.get(channel_id, target_id)
+        if not author_pts or not target_pts:
+            raise ValueError
         pts = random.randint(0, abs(author_pts - target_pts))
         chance = random.randint(-author_pts, target_pts) / max([author_pts, target_pts])
         return int(pts * chance)
