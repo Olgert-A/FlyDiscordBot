@@ -78,7 +78,7 @@ async def cmd_levels_kick(ctx, *args):
     targets = parsed if parsed else [TargetKicks('1')]
 
     members = LevelMisc.get_members(ctx.channel)
-    member_ids = {'m.id': 1 for m in members}
+    member_ids = {f'{m.id}': 1 for m in members}
     logging.info(member_ids)
 
     for target in targets:
