@@ -94,15 +94,12 @@ async def cmd_levels_kick(ctx, *args):
 
             target_id = target.id if target.id else random.choice(members).id
 
-            try:
-                pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
-                LevelKick.add_use(ctx.channel.id, ctx.author.id)
+            pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+            LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
-                await ctx.message.reply(
-                    f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
-                    f"получив {LevelPoints.convert(pts):.2f} см.")
-            except ValueError:
-                await ctx.message.reply('Не удалось выебать, тк разработчик бота пидор говнокодерский')
+            await ctx.message.reply(
+                f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+                f"получив {LevelPoints.convert(pts):.2f} см.")
 
 
 @commands.command(name='args')
