@@ -22,7 +22,7 @@ class TargetKicks:
     def _get_id(target_string):
         result = re.findall(r'(?<=<@)\d+(?=>)', target_string)
         if result:
-            return str(result[0])
+            return f'{result[0]}'
         else:
             return ''
 
