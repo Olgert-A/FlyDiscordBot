@@ -2,7 +2,7 @@ import random
 import logging
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db
-from levels.utils.target import TargetParser
+from levels.utils.target import TargetParser, TargetKicks
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
@@ -70,23 +70,32 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, *args):
-    for target in TargetParser.parce(args):
-        if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
-            await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
-            return
+    if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
+        await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
+        return
 
-        members = LevelMisc.get_members(ctx.channel)
-        member_ids = {m.id: 1 for m in members}
+    parsed = TargetParser.parce(args)
+    targets = parsed if parsed else [TargetKicks('1')]
 
+    members = LevelMisc.get_members(ctx.channel)
+    member_ids = {m.id: 1 for m in members}
+
+    for target in targets:
         if target.id and not member_ids.get(target.id):
             await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
             continue
 
         target_id = target.id if target.id else random.choice(members).id
-        pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
-        LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
-        await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+        for _ in range(target.kicks):
+            if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
+                await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
+                return
+
+            pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+            LevelKick.add_use(ctx.channel.id, ctx.author.id)
+
+            await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
                                 f"получив {LevelPoints.convert(pts):.2f} см.")
 
 
