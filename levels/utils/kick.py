@@ -1,7 +1,9 @@
 import random
+import logging
 from db.current import get_levels_db, get_kicks_db
 from levels.utils.points import LevelPoints
 
+logging.basicConfig(level=logging.INFO)
 
 class LevelKick:
     MAX_KICK_USES = 3
@@ -18,6 +20,7 @@ class LevelKick:
     def calc(channel_id, author_id, target_id) -> int:
         author_pts = LevelPoints.get(channel_id, author_id)
         target_pts = LevelPoints.get(channel_id, target_id)
+        logging.info(f'author_pts {author_pts}, target_pts {target_pts}')
         if not author_pts or not target_pts:
             raise ValueError
         pts = random.randint(0, abs(author_pts - target_pts))
