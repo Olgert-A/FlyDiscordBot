@@ -78,7 +78,7 @@ async def cmd_levels_kick(ctx, *args):
         members = LevelMisc.get_members(ctx.channel)
         member_ids = {m.id: 1 for m in members}
 
-        if not member_ids.get(f'{target.id}'):
+        if target.id and not member_ids.get(target.id):
             await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
             continue
 
