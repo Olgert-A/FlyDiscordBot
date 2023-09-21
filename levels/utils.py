@@ -1,9 +1,12 @@
 import random
+import re
 from db.current import get_levels_db, get_kicks_db
+from collections import namedtuple
 
 
 class LevelUtils:
     MAX_KICK_USES = 3
+    Target = namedtuple('Target', 'id kicks')
 
     @staticmethod
     def generate_points():
@@ -27,6 +30,14 @@ class LevelUtils:
         for m in members:
             if str(m.id) in target:
                 return m.id
+
+    @staticmethod
+    def parce_targets(args):
+        args = ' '.join(args)
+        return re.findall(r'<@\d+>\s+\d|<@\d+>', args)
+
+        #target = LevelUtils.Target(123, 2)
+
 
     @staticmethod
     def get_kicks_use(channel_id, author_id):

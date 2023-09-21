@@ -79,6 +79,11 @@ async def cmd_levels_kick(ctx, target=None):
     await ctx.message.reply(report)
 
 
+@commands.command(name='args')
+async def cmd_args_test(ctx, *args):
+    await ctx.channel.send(Utils.parce_targets(args))
+
+
 @commands.command(name='circle')
 async def circle(ctx):
     members = Utils.get_members(ctx.channel)
