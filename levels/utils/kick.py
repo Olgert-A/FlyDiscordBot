@@ -22,8 +22,8 @@ class LevelKick:
         author_pts = LevelPoints.get(channel_id, author_id)
         target_pts = LevelPoints.get(channel_id, target_id)
         logging.info(f'author_pts {author_pts}, target_pts {target_pts}')
-        if author_pts is None or target_pts is None:
-            raise ValueError
+        #if author_pts is None or target_pts is None:
+        #    raise ValueError
         pts = random.randint(0, abs(author_pts - target_pts))
         chance = random.randint(-author_pts, target_pts) / max([abs(author_pts), abs(target_pts), 1])
         return int(pts * chance)
