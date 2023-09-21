@@ -87,12 +87,12 @@ async def cmd_levels_kick(ctx, *args):
             await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
             continue
 
-        target_id = target.id if target.id else random.choice(members).id
-
         for _ in range(target.kicks):
             if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
                 await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
                 return
+
+            target_id = target.id if target.id else random.choice(members).id
 
             try:
                 pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
