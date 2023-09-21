@@ -1,8 +1,10 @@
 import random
-from db.current import get_levels_db
+from db.current import get_levels_db, get_kicks_db
 
 
 class LevelUtils:
+    MAX_KICK_USES = 3
+
     @staticmethod
     def generate_points():
         return random.randint(-6, 10)
@@ -16,12 +18,36 @@ class LevelUtils:
         return get_levels_db().points_get(channel_id, member_id)
 
     @staticmethod
+    def get_members(channel):
+        return [m for m in channel.members if not m.bot]
+
+    @staticmethod
+    def get_target_id(target, members):
+        # if m.id in target return m.id else return None
+        for m in members:
+            if str(m.id) in target:
+                return m.id
+
+    @staticmethod
+    def get_kicks_use(channel_id, author_id):
+        return get_kicks_db().get(channel_id, author_id)
+
+    @staticmethod
     def calc_kick(channel_id, author_id, target_id) -> int:
         author_pts = LevelUtils.get_points(channel_id, author_id)
         target_pts = LevelUtils.get_points(channel_id, target_id)
         pts = random.randint(0, abs(author_pts - target_pts))
         chance = random.randint(-author_pts, target_pts) / max([author_pts, target_pts])
         return int(pts * chance)
+
+    @staticmethod
+    def kick(channel_id, author_id, target_id):
+        pts_up = LevelUtils.calc_kick(channel_id, author_id, target_id)
+        get_levels_db().points_add(channel_id, author_id, pts_up)
+        get_levels_db().points_add(channel_id, target_id, -pts_up)
+        get_kicks_db().add(channel_id, author_id, 1)
+        return f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, " \
+               f"получив {LevelUtils.convert_points(pts_up):.2f} см."
 
     @staticmethod
     def phrase(points):

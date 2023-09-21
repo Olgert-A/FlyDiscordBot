@@ -64,52 +64,38 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, target=None):
-    uses = get_kicks_db().get(ctx.channel.id, ctx.author.id)
-
-    if uses and uses >= 3:
+    if Utils.get_kicks_use(ctx.channel.id, ctx.author.id) >= Utils.MAX_KICK_USES:
         await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
         return
 
-    def get_target_id():
-        members = [m for m in ctx.channel.members if not m.bot]
-        if target:
-            # if m.id in target return m.id else return None
-            for m in members:
-                if str(m.id) in target:
-                    return m.id
-        else:
-            return random.choice(members).id
+    members = Utils.get_members(ctx.channel)
+    target_id = Utils.get_target_id(target, members) if target else random.choice(members).id
 
-    if not (target_id := get_target_id()):
+    if not target_id:
         await ctx.message.reply("Тегни цель, еблан")
         return
 
-    pts_up = Utils.calc_kick(ctx.channel.id, ctx.author.id, target_id)
-
-    get_levels_db().points_add(ctx.channel.id, ctx.author.id, pts_up)
-    get_levels_db().points_add(ctx.channel.id, target_id, -pts_up)
-    get_kicks_db().add(ctx.channel.id, ctx.author.id, 1)
-    await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
-                            f"получив {Utils.convert_points(pts_up):.2f} см.")
+    report = Utils.kick(ctx.channel.id, ctx.author.id, target_id)
+    await ctx.message.reply(report)
 
 
 @commands.command(name='circle')
 async def circle(ctx):
-    members = [m for m in ctx.channel.members if not m.bot]
+    members = Utils.get_members(ctx.channel)
     report = Events.circle(ctx.channel.id, members)
     await ctx.message.reply(report)
 
 
 @commands.command(name='alltoone')
 async def alltoone(ctx):
-    members = [m for m in ctx.channel.members if not m.bot]
+    members = Utils.get_members(ctx.channel)
     report = Events.all_to_one(ctx.channel.id, members)
     await ctx.message.reply(report)
 
 
 @commands.command(name='cut')
 async def cut(ctx):
-    members = [m for m in ctx.channel.members if not m.bot]
+    members = Utils.get_members(ctx.channel)
     report = Events.cut(ctx.channel.id, members)
     await ctx.message.reply(report)
 
