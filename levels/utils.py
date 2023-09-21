@@ -6,6 +6,31 @@ from collections import namedtuple
 
 class LevelUtils:
     MAX_KICK_USES = 3
+
+    class TargetKicks:
+        def __init__(self, target_string):
+            self.id = self._get_id(target_string)
+            self.kicks = self._get_kicks(target_string)
+
+        def __str__(self):
+            return f'{self.id}: {self.kicks}'
+
+        @staticmethod
+        def _get_id(target_string):
+            result = re.findall(r'(?<=<@)\d+(?=>)', target_string)
+            if result:
+                return result[0]
+            else:
+                return 0
+
+        @staticmethod
+        def _get_kicks(target_string):
+            result = re.findall(r'(?<!\S)\d+(?!\S)', target_string)
+            if result:
+                return result[0]
+            else:
+                return 1
+
     Target = namedtuple('Target', 'id kicks')
 
     @staticmethod
@@ -34,10 +59,9 @@ class LevelUtils:
     @staticmethod
     def parce_targets(args):
         args = ' '.join(args)
-        return re.findall(r'<@\d+>\s+\d|<@\d+>', args)
-
-        #target = LevelUtils.Target(123, 2)
-
+        target_strings = re.findall(r'<@\d+>\s+\d|<@\d+>', args)
+        targets = [LevelUtils.TargetKicks(t) for t in target_strings]
+        return targets
 
     @staticmethod
     def get_kicks_use(channel_id, author_id):
