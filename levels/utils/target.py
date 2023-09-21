@@ -3,7 +3,7 @@ import re
 
 class TargetParser:
     @staticmethod
-    def parce_targets(args):
+    def parce(args):
         args = ' '.join(args)
         target_strings = re.findall(r'<@\d+>\s+\d|<@\d+>|(?<!\S)\d+(?!\S)', args)
         targets = [TargetKicks(t) for t in target_strings]

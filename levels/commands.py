@@ -66,29 +66,30 @@ async def cmd_levels_table(ctx):
 
 
 @commands.command(name='выебать')
-async def cmd_levels_kick(ctx, target=None):
-    if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
-        await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
-        return
+async def cmd_levels_kick(ctx, *args):
+    for i, target in enumerate(TargetParser.parce(args)):
+        if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
+            await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
+            return
 
-    members = LevelMisc.get_members(ctx.channel)
-    target_id = LevelMisc.get_target_id(target, members) if target else random.choice(members).id
+        members = LevelMisc.get_members(ctx.channel)
+        member_ids = {m.id: 1 for m in members}
 
-    if not target_id:
-        await ctx.message.reply("Тегни цель, еблан")
-        return
+        if not member_ids.get(target.id):
+            await ctx.message.reply(f'{i}. <@{target.id}> выебать невозможно!')
+            continue
 
-    pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
-    LevelKick.add_use(ctx.channel.id, ctx.author.id)
+        target_id = target.id if target.id else random.choice(members).id
+        pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+        LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
-    report = f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, " \
-               f"получив {LevelPoints.convert(pts):.2f} см."
-    await ctx.message.reply(report)
+        await ctx.message.reply(f"{i}. Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+                                f"получив {LevelPoints.convert(pts):.2f} см.")
 
 
 @commands.command(name='args')
 async def cmd_args_test(ctx, *args):
-    await ctx.channel.send([str(t) for t in TargetParser.parce_targets(args)])
+    await ctx.channel.send([str(t) for t in TargetParser.parce(args)])
 
 
 @commands.command(name='circle')
