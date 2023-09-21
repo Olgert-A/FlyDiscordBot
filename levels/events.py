@@ -1,5 +1,6 @@
 import random
-from levels.utils import LevelUtils
+from levels.utils.points import LevelPoints
+from levels.utils.kick import LevelKick
 from db.current import get_levels_db
 
 
@@ -23,11 +24,11 @@ class LevelEvents:
             author_id = members[current_index].id
             target_id = members[target_index].id
 
-            pts_up = LevelUtils.calc_kick(channel_id, author_id, target_id)
+            pts_up = LevelKick.calc(channel_id, author_id, target_id)
 
             get_levels_db().points_add(channel_id, author_id, pts_up)
             get_levels_db().points_add(channel_id, target_id, -pts_up)
-            report += f"<@{author_id}> выбирает <@{target_id}> и получает {LevelUtils.convert_points(pts_up):.2f} см.\n"
+            report += f"<@{author_id}> выбирает <@{target_id}> и получает {LevelPoints.convert(pts_up):.2f} см.\n"
         return report
 
     @staticmethod
@@ -39,24 +40,24 @@ class LevelEvents:
 
         victim_points = 0
         for author in others:
-            pts_up = LevelUtils.calc_kick(channel_id, author.id, victim.id)
+            pts_up = LevelKick.calc(channel_id, author.id, victim.id)
             victim_points -= pts_up
 
             get_levels_db().points_add(channel_id, author.id, pts_up)
             get_levels_db().points_add(channel_id, victim.id, -pts_up)
 
-            report += f"<@{author.id}> получает {LevelUtils.convert_points(pts_up):.2f} см.\n"
+            report += f"<@{author.id}> получает {LevelPoints.convert(pts_up):.2f} см.\n"
 
-        report += f"\nСуммарно жертва получила {LevelUtils.convert_points(victim_points):.2f} см."
+        report += f"\nСуммарно жертва получила {LevelPoints.convert(victim_points):.2f} см."
         return report
 
     @staticmethod
     def cut(channel_id, members):
         victim = random.choice(members)
 
-        pts = LevelUtils.get_points(channel_id, victim.id)
+        pts = LevelPoints.get(channel_id, victim.id)
         cut = -random.randint(0, abs(pts))
         get_levels_db().points_add(channel_id, victim.id, cut)
 
         return (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
-                  f"{LevelUtils.convert_points(-cut):.2f} см.")
+                  f"{LevelPoints.convert(-cut):.2f} см.")

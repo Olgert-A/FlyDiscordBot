@@ -1,7 +1,10 @@
 import random
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db
-from levels.utils import LevelUtils as Utils
+from levels.utils.target import TargetParser
+from levels.utils.points import LevelPoints
+from levels.utils.kick import LevelKick
+from levels.utils.misc import LevelMisc
 from levels.events import LevelEvents as Events
 from levels.tasks import level_daily_event
 
@@ -33,8 +36,8 @@ async def cmd_levels_points(ctx):
         await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
         return
 
-    points = Utils.convert_points(points)
-    await ctx.message.reply(f"У тебя {points} см. " + Utils.phrase(points))
+    points = LevelPoints.convert(points)
+    await ctx.message.reply(f"У тебя {points} см. " + LevelMisc.phrase(points))
 
 
 @commands.command(name='ебыри')
@@ -56,7 +59,7 @@ async def cmd_levels_table(ctx):
 
     table = sorted(table.items(), key=lambda v: v[1], reverse=True)
 
-    points = [f"{i}. {name}: {Utils.convert_points(v)} см."
+    points = [f"{i}. {name}: {LevelPoints.convert(v)} см."
               for i, (p, v) in enumerate(table)
               if (name := members.get(p))]
     await ctx.message.reply('\n'.join(points))
@@ -64,43 +67,43 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, target=None):
-    if Utils.get_kicks_use(ctx.channel.id, ctx.author.id) >= Utils.MAX_KICK_USES:
+    if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
         await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
         return
 
-    members = Utils.get_members(ctx.channel)
-    target_id = Utils.get_target_id(target, members) if target else random.choice(members).id
+    members = LevelMisc.get_members(ctx.channel)
+    target_id = LevelMisc.get_target_id(target, members) if target else random.choice(members).id
 
     if not target_id:
         await ctx.message.reply("Тегни цель, еблан")
         return
 
-    report = Utils.kick(ctx.channel.id, ctx.author.id, target_id)
+    report = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
     await ctx.message.reply(report)
 
 
 @commands.command(name='args')
 async def cmd_args_test(ctx, *args):
-    await ctx.channel.send([str(t) for t in Utils.parce_targets(args)])
+    await ctx.channel.send([str(t) for t in TargetParser.parce_targets(args)])
 
 
 @commands.command(name='circle')
 async def circle(ctx):
-    members = Utils.get_members(ctx.channel)
+    members = LevelMisc.get_members(ctx.channel)
     report = Events.circle(ctx.channel.id, members)
     await ctx.message.reply(report)
 
 
 @commands.command(name='alltoone')
 async def alltoone(ctx):
-    members = Utils.get_members(ctx.channel)
+    members = LevelMisc.get_members(ctx.channel)
     report = Events.all_to_one(ctx.channel.id, members)
     await ctx.message.reply(report)
 
 
 @commands.command(name='cut')
 async def cut(ctx):
-    members = Utils.get_members(ctx.channel)
+    members = LevelMisc.get_members(ctx.channel)
     report = Events.cut(ctx.channel.id, members)
     await ctx.message.reply(report)
 

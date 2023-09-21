@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from commands.register import to_use
 from db.current import get_levels_db
-from levels.utils import LevelUtils
+from levels.utils.points import LevelPoints
 from levels.tasks import kicks_daily_clear
 
 
@@ -20,7 +20,7 @@ def main():
         await client.process_commands(message)
 
         if not message.author.bot:
-            get_levels_db().points_add(message.channel.id, message.author.id, LevelUtils.generate_points())
+            get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
 
     for cmd in to_use:
         client.add_command(cmd)

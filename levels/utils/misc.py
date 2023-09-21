@@ -1,50 +1,7 @@
 import random
-import re
-from db.current import get_levels_db, get_kicks_db
-from collections import namedtuple
 
 
-class LevelUtils:
-    MAX_KICK_USES = 3
-
-    class TargetKicks:
-        def __init__(self, target_string):
-            self.id = self._get_id(target_string)
-            self.kicks = self._get_kicks(target_string)
-
-        def __str__(self):
-            return f'{self.id}: {self.kicks}'
-
-        @staticmethod
-        def _get_id(target_string):
-            result = re.findall(r'(?<=<@)\d+(?=>)', target_string)
-            if result:
-                return result[0]
-            else:
-                return 0
-
-        @staticmethod
-        def _get_kicks(target_string):
-            result = re.findall(r'(?<!\S)\d+(?!\S)', target_string)
-            if result:
-                return result[0]
-            else:
-                return 1
-
-    Target = namedtuple('Target', 'id kicks')
-
-    @staticmethod
-    def generate_points():
-        return random.randint(-6, 10)
-
-    @staticmethod
-    def convert_points(points):
-        return points / 100.
-
-    @staticmethod
-    def get_points(channel_id, member_id):
-        return get_levels_db().points_get(channel_id, member_id)
-
+class LevelMisc:
     @staticmethod
     def get_members(channel):
         return [m for m in channel.members if not m.bot]
@@ -55,34 +12,6 @@ class LevelUtils:
         for m in members:
             if str(m.id) in target:
                 return m.id
-
-    @staticmethod
-    def parce_targets(args):
-        args = ' '.join(args)
-        target_strings = re.findall(r'<@\d+>\s+\d|<@\d+>', args)
-        targets = [LevelUtils.TargetKicks(t) for t in target_strings]
-        return targets
-
-    @staticmethod
-    def get_kicks_use(channel_id, author_id):
-        return get_kicks_db().get(channel_id, author_id)
-
-    @staticmethod
-    def calc_kick(channel_id, author_id, target_id) -> int:
-        author_pts = LevelUtils.get_points(channel_id, author_id)
-        target_pts = LevelUtils.get_points(channel_id, target_id)
-        pts = random.randint(0, abs(author_pts - target_pts))
-        chance = random.randint(-author_pts, target_pts) / max([author_pts, target_pts])
-        return int(pts * chance)
-
-    @staticmethod
-    def kick(channel_id, author_id, target_id):
-        pts_up = LevelUtils.calc_kick(channel_id, author_id, target_id)
-        get_levels_db().points_add(channel_id, author_id, pts_up)
-        get_levels_db().points_add(channel_id, target_id, -pts_up)
-        get_kicks_db().add(channel_id, author_id, 1)
-        return f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, " \
-               f"получив {LevelUtils.convert_points(pts_up):.2f} см."
 
     @staticmethod
     def phrase(points):
