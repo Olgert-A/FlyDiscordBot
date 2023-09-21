@@ -11,6 +11,10 @@ class LevelKick:
         return get_kicks_db().get(channel_id, author_id)
 
     @staticmethod
+    def add_use(channel_id, author_id):
+        get_kicks_db().add(channel_id, author_id, 1)
+
+    @staticmethod
     def calc(channel_id, author_id, target_id) -> int:
         author_pts = LevelPoints.get(channel_id, author_id)
         target_pts = LevelPoints.get(channel_id, target_id)
@@ -23,6 +27,4 @@ class LevelKick:
         pts_up = LevelKick.calc(channel_id, author_id, target_id)
         get_levels_db().points_add(channel_id, author_id, pts_up)
         get_levels_db().points_add(channel_id, target_id, -pts_up)
-        get_kicks_db().add(channel_id, author_id, 1)
-        return f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, " \
-               f"получив {LevelPoints.convert(pts_up):.2f} см."
+        return pts_up

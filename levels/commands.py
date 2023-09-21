@@ -78,7 +78,11 @@ async def cmd_levels_kick(ctx, target=None):
         await ctx.message.reply("Тегни цель, еблан")
         return
 
-    report = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+    pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+    LevelKick.add_use(ctx.channel.id, ctx.author.id)
+
+    report = f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, " \
+               f"получив {LevelPoints.convert(pts):.2f} см."
     await ctx.message.reply(report)
 
 
