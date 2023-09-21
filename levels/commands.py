@@ -1,4 +1,5 @@
 import random
+import logging
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db
 from levels.utils.target import TargetParser
@@ -7,6 +8,8 @@ from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
 from levels.events import LevelEvents as Events
 from levels.tasks import level_daily_event
+
+logging.basicConfig(level=logging.INFO)
 
 
 @commands.command(name='лвл-рег')
@@ -67,7 +70,7 @@ async def cmd_levels_table(ctx):
 
 @commands.command(name='выебать')
 async def cmd_levels_kick(ctx, *args):
-    for i, target in enumerate(TargetParser.parce(args)):
+    for target in TargetParser.parce(args):
         if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
             await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
             return
@@ -75,15 +78,15 @@ async def cmd_levels_kick(ctx, *args):
         members = LevelMisc.get_members(ctx.channel)
         member_ids = {m.id: 1 for m in members}
 
-        if not member_ids.get(target.id):
-            await ctx.message.reply(f'{i}. <@{target.id}> выебать невозможно!')
+        if not member_ids.get(f'{target.id}'):
+            await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
             continue
 
         target_id = target.id if target.id else random.choice(members).id
         pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
         LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
-        await ctx.message.reply(f"{i}. Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+        await ctx.message.reply(f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
                                 f"получив {LevelPoints.convert(pts):.2f} см.")
 
 
