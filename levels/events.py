@@ -76,7 +76,7 @@ class LevelEvents:
 
         cmb = combinations(members, 2)
         matches = random.randint(1, 5)
-        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nМатчи:'
+        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nМатчи:\n'
 
         for first, second in cmb:
             scores = [winner(first.id, second.id) for _ in range(matches)]
@@ -85,16 +85,17 @@ class LevelEvents:
             second_pts = count[second.id]
             table[first.id] += first_pts
             table[second.id] += second_pts
-            report += f'{first_pts}:{second_pts} <@{first.id}> : <@{second.id}>\n'
+            report += f'{first_pts}:{second_pts} <@{first.id}> - <@{second.id}>\n'
 
-        report += '\n Таблица:'
+        report += '\nТаблица:\n'
         sorted_table = sorted(table.items(), key=lambda item: item[1], reverse=True)
         for place, (k, v) in enumerate(sorted_table):
-            report += f'{place}. <@{k}> {v}\n'
+            report += f'{place+1}. <@{k}> {v}\n'
 
-        top_score, _ = sorted_table[0]#max(table, key=lambda k: table[k])
+        top_score, _ = sorted_table[0]
         match_reward = 500 / (matches * (len(members) - 1))
         pts = table[top_score] * match_reward
+        get_levels_db().points_add(channel_id, top_score, pts)
         report += (f'\nПобедитель турнира <@{top_score}> заработал {table[top_score]} очков и получает приз в '
                    f'{LevelPoints.convert(pts):.2f} см.')
         return report
