@@ -22,6 +22,7 @@ class LevelKick:
         pts = random.randint(0, abs(author_pts - target_pts))
         range_limits = [-author_pts, target_pts]
         chance = random.randint(min(range_limits), max(range_limits)) / max([abs(author_pts), abs(target_pts), 1])
+        logging.info(f'pts: {pts}\nlimits: {range_limits}\nchance: {chance}')
         return int(pts * chance)
 
     @staticmethod
