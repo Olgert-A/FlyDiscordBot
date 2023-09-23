@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 async def cmd_levels_reg(ctx):
     channel_id = ctx.channel.id
     get_levels_db().channel_reg(channel_id)
-    members = LevelMisc.get_members(channel_id)
+    members = LevelMisc.get_members(ctx.channel)
     for m in members:
         get_levels_db().points_add(channel_id, m.id, 0)
         get_kicks_db().add(channel_id, m.id, 0)
@@ -116,9 +116,36 @@ async def cmd_start_event(ctx):
     await asyncio.sleep(1)
 
     event = random.choice(LevelEvents.get_events())
-    members = LevelMisc.get_members(channel_id)
+    members = LevelMisc.get_members(ctx.channel)
     report = event(channel_id, members)
     await ctx.channel.send(report)
+
+
+@commands.command(name='наростить')
+async def cmd_add_points(ctx, target, points):
+    if not (ctx.author.id == 7345345):
+        await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
+        return
+
+    pts = int(points)
+    if not pts:
+        await ctx.message.reply(f"Поинты должны быть числом <:pepe_loh:1022083481725063238>")
+        return
+
+    members = LevelMisc.get_members(ctx.channel)
+    target_id = 0
+    for m in members:
+        if m.id in target:
+            target_id = m.id
+            break
+
+    if not target_id:
+        await ctx.message.reply(f"Тегни цель <:pepe_loh:1022083481725063238>")
+        return
+
+    get_levels_db().points_add(ctx.channel.id, target_id, pts)
+    await ctx.message.reply(f"Поинты добавлены!")
+
 
 @commands.command(name='инфо')
 async def cmd_args_info(ctx):
