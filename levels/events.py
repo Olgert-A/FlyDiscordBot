@@ -112,7 +112,7 @@ class LevelEvents:
         selected = random.sample(members, team_size * 2)
 
         team1 = selected[:team_size]
-        team2 = selected[:-team_size]
+        team2 = selected[-team_size:]
 
         report = 'Командная ебка!\n\nКоманда №1:\n'
         for m in team1:
@@ -126,11 +126,6 @@ class LevelEvents:
         team1_sum = sum(team1_pts.values())
         team2_sum = sum(team2_pts.values())
         kick_result = LevelKick.calc_by_pts(team1_sum, team2_sum)
-        logging.info(team1_pts)
-        logging.info(team2_pts)
-        logging.info(team1_sum)
-        logging.info(team2_sum)
-        logging.info(kick_result)
 
         report += (f'\nКоманда 1 вступает в гачи-поединок с Командой 2 и получает '
                    f'{LevelPoints.convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
