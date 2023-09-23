@@ -123,20 +123,20 @@ class LevelEvents:
 
         team1_pts = {m.id: get_levels_db().points_get(channel_id, m.id) for m in team1}
         team2_pts = {m.id: get_levels_db().points_get(channel_id, m.id) for m in team2}
-
-        kick_result = LevelKick.calc_by_pts(sum(team1_pts.values()),
-                                            sum(team2_pts.values()))
+        team1_sum = sum(team1_pts.values())
+        team2_sum = sum(team2_pts.values())
+        kick_result = LevelKick.calc_by_pts(team1_sum, team2_sum)
 
         report += (f'\nКоманда 1 вступает в гачи-поединок с Командой 2 и получает '
                    f'{LevelPoints.convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
 
         for m_id, m_pts in team1_pts.items():
-            pts = kick_result * int(m_pts / sum(team1_pts.values()))
+            pts = int(kick_result * m_pts / team1_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'<@{m_id}> получает {LevelPoints.convert(pts):.2f} см.\n'
 
         for m_id, m_pts in team2_pts.items():
-            pts = -kick_result * int(m_pts / sum(team2_pts.values()))
+            pts = -int(kick_result * m_pts / team2_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'<@{m_id}> получает {LevelPoints.convert(pts):.2f} см.\n'
 
