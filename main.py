@@ -1,36 +1,42 @@
-import os
-import discord
-import logging
-from discord.ext import commands
-from commands.register import to_use
-from db.current import get_levels_db
-from levels.utils.points import LevelPoints
-from levels.tasks import kicks_daily_clear
+# import os
+# import discord
+# import logging
+# from discord.ext import commands
+# from commands.register import to_use
+# from db.current import get_levels_db
+# from levels.utils.points import LevelPoints
+# from levels.tasks import kicks_daily_clear
+from itertools import combinations
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 
 
-def main():
-    client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-
-    @client.event
-    async def on_ready():
-        print(f"{client.user.name} connected.")
-        kicks_daily_clear.start()
-
-    @client.event
-    async def on_message(message):
-        await client.process_commands(message)
-
-        #logging.info(message)
-
-        if not message.author.bot:
-            get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
-
-    for cmd in to_use:
-        client.add_command(cmd)
-    client.run(os.getenv("DISCORD_TOKEN"))
+# def main():
+#     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+#
+#     @client.event
+#     async def on_ready():
+#         print(f"{client.user.name} connected.")
+#         kicks_daily_clear.start()
+#
+#     @client.event
+#     async def on_message(message):
+#         await client.process_commands(message)
+#
+#         #logging.info(message)
+#
+#         if not message.author.bot:
+#             get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
+#
+#     for cmd in to_use:
+#         client.add_command(cmd)
+#     client.run(os.getenv("DISCORD_TOKEN"))
 
 
 if __name__ == '__main__':
-    main()
+    members = [1, 2, 3, 4, 5]
+    cmb = combinations(members, 2)
+    for a, b in cmb:
+        print(f'{a} and {b}')
+
+    #main()

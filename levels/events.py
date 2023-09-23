@@ -1,4 +1,6 @@
 import random
+from itertools import combinations
+from collections import Counter
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from db.current import get_levels_db
@@ -61,3 +63,40 @@ class LevelEvents:
 
         return (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
                   f"{LevelPoints.convert(-cut):.2f} см.")
+
+    @staticmethod
+    def tournament(channel_id, members):
+        def winner(first, second):
+            return random.choice([first, second])
+
+        if len(members) < 2:
+            return
+
+        table = {m.id: 0 for m in members}
+
+        cmb = combinations(members, 2)
+        matches = random.randint(1, 5)
+        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nМатчи:'
+
+        for first, second in cmb:
+            scores = [winner(first.id, second.id) for _ in range(matches)]
+            count = Counter(scores)
+            first_pts = count[first.id]
+            second_pts = count[second.id]
+            table[first.id] += first_pts
+            table[second.id] += second_pts
+            report += f'{first_pts}:{second_pts} <@{first.id}> : <@{second.id}>\n'
+
+        report += '\n Таблица:'
+        sorted_table = sorted(table, key=lambda k: table[k], reverse=True)
+        for place, (k, v) in enumerate(sorted_table):
+            report += f'{place}. <@{k}> {v}\n'
+
+        top_score, _ = sorted_table[0]#max(table, key=lambda k: table[k])
+        match_reward = 500 / (matches * (len(members) - 1))
+        pts = table[top_score] * match_reward
+        report += (f'\nПобедитель турнира <@{top_score}> заработал {table[top_score]} очков и получает приз в '
+                   f'{LevelPoints.convert(pts):.2f} см.')
+        return report
+
+

@@ -168,3 +168,9 @@ async def cmd_args_info(ctx):
 !выебать айваз любойтекст 2 - выебет 1 раз айваза и 2 рандомов"""
     )
 
+
+@commands.command(name='тест')
+async def cmd_event_test(ctx):
+    members = LevelMisc.get_members(ctx.channel)
+    report = LevelEvents.tournament(ctx.channel.id, members)
+    await ctx.message.reply(report)
