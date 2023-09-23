@@ -123,7 +123,7 @@ async def cmd_start_event(ctx):
 
 @commands.command(name='наростить')
 async def cmd_add_points(ctx, target, points):
-    if not (ctx.author.id == 7345345):
+    if not (ctx.author.id == 776537982924619786):
         await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
         return
 
