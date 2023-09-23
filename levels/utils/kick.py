@@ -20,7 +20,8 @@ class LevelKick:
     @staticmethod
     def calc_by_pts(author_pts, target_pts):
         pts = random.randint(0, abs(author_pts - target_pts))
-        chance = random.randint(-author_pts, target_pts) / max([abs(author_pts), abs(target_pts), 1])
+        range_limits = [-author_pts, target_pts]
+        chance = random.randint(min(range_limits), max(range_limits)) / max([abs(author_pts), abs(target_pts), 1])
         return int(pts * chance)
 
     @staticmethod
