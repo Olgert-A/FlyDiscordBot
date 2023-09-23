@@ -17,8 +17,8 @@ def main():
     async def on_ready():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
-        for channel_id in get_levels_db().get_channels():
-            level_daily_event.start(client.get_channel(channel_id))
+        channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
+        level_daily_event.start(channels)
 
     @client.event
     async def on_message(message):

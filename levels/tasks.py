@@ -16,8 +16,9 @@ async def kicks_daily_clear():
 
 
 @tasks.loop(time=datetime.time(hour=15, tzinfo=utc))
-async def level_daily_event(channel):
-    event = random.choice(LevelEvents.get_events())
-    members = LevelMisc.get_members(channel.id)
-    report = event(channel.id, members)
-    await channel.send(report)
+async def level_daily_event(channels):
+    for channel in channels:
+        event = random.choice(LevelEvents.get_events())
+        members = LevelMisc.get_members(channel.id)
+        report = event(channel.id, members)
+        await channel.send(report)
