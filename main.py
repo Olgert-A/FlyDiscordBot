@@ -22,7 +22,7 @@ def main():
     async def on_message(message):
         await client.process_commands(message)
 
-        logging.info(message)
+        #logging.info(message)
 
         if not message.author.bot:
             get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
