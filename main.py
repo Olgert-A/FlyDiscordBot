@@ -5,7 +5,7 @@ from discord.ext import commands
 from commands.register import to_use
 from db.current import get_levels_db
 from levels.utils.points import LevelPoints
-from levels.tasks import kicks_daily_clear
+from levels.tasks import kicks_daily_clear, level_daily_event
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +17,8 @@ def main():
     async def on_ready():
         print(f"{client.user.name} connected.")
         kicks_daily_clear.start()
+        for channel_id in get_levels_db().get_channels():
+            level_daily_event.start(client.get_channel(channel_id))
 
     @client.event
     async def on_message(message):
