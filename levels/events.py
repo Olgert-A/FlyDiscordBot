@@ -128,6 +128,7 @@ class LevelEvents:
         team1_sum = sum(team1_pts.values())
         team2_sum = sum(team2_pts.values())
         kick_result = LevelKick.calc_by_pts(team1_sum, team2_sum)
+        logging.info(f'team1: {team1_pts}\nsum: {team1_sum}\nteam2: {team2_pts}\nsum: {team2_sum}\nkick: {kick_result}')
 
         report += (f'\nКоманда 1 вступает в гачи-поединок с Командой 2 и получает '
                    f'{LevelPoints.convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
