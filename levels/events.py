@@ -88,7 +88,7 @@ class LevelEvents:
             report += f'{first_pts}:{second_pts} <@{first.id}> : <@{second.id}>\n'
 
         report += '\n Таблица:'
-        sorted_table = sorted(table, key=lambda k: table[k], reverse=True)
+        sorted_table = sorted(table.items(), key=lambda item: item[1], reverse=True)
         for place, (k, v) in enumerate(sorted_table):
             report += f'{place}. <@{k}> {v}\n'
 
