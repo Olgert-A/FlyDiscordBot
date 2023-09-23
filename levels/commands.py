@@ -1,3 +1,4 @@
+import asyncio
 import random
 import logging
 from discord.ext import commands
@@ -6,7 +7,7 @@ from levels.utils.target import TargetParser, TargetKicks
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
-from levels.events import LevelEvents as Events
+from levels.events import LevelEvents
 from levels.tasks import level_daily_event
 
 logging.basicConfig(level=logging.INFO)
@@ -14,11 +15,14 @@ logging.basicConfig(level=logging.INFO)
 
 @commands.command(name='лвл-рег')
 async def cmd_levels_reg(ctx):
-    get_levels_db().channel_reg(ctx.channel.id)
-    for m in ctx.channel.members:
-        if not m.bot:
-            get_levels_db().points_add(ctx.channel.id, m.id, 0)
-            get_kicks_db().add(ctx.channel.id, m.id, 0)
+    channel_id = ctx.channel.id
+    get_levels_db().channel_reg(channel_id)
+    members = LevelMisc.get_members(channel_id)
+    for m in members:
+        get_levels_db().points_add(channel_id, m.id, 0)
+        get_kicks_db().add(channel_id, m.id, 0)
+
+    level_daily_event.start(ctx)
 
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
@@ -29,6 +33,7 @@ async def cmd_levels_reg(ctx):
 @commands.command(name='лвл-стоп')
 async def cmd_levels_stop(ctx):
     get_levels_db().channel_reg_stop(ctx.channel.id)
+    level_daily_event.stop()
     await ctx.message.delete()
     await ctx.channel.send(f"Канал больше не участвует в программе **Ебырьметр**")
 
@@ -102,6 +107,19 @@ async def cmd_levels_kick(ctx, *args):
                 f"получив {LevelPoints.convert(pts):.2f} см.")
 
 
+@commands.command(name='ивент')
+async def cmd_start_event(ctx):
+    pts = -200
+    channel_id = ctx.channel.id
+    get_levels_db().points_add(channel_id, ctx.author.id, pts)
+    await ctx.message.reply(f'Ты тратишь {LevelPoints.convert(pts):.2f} см. и запускаешь случайный ивент!')
+    await asyncio.sleep(1)
+
+    event = random.choice(LevelEvents.get_events())
+    members = LevelMisc.get_members(channel_id)
+    report = event(channel_id, members)
+    await ctx.channel.send(report)
+
 @commands.command(name='инфо')
 async def cmd_args_info(ctx):
     await ctx.message.reply(
@@ -123,32 +141,3 @@ async def cmd_args_info(ctx):
 !выебать айваз любойтекст 2 - выебет 1 раз айваза и 2 рандомов"""
     )
 
-@commands.command(name='args')
-async def cmd_args_test(ctx, *args):
-    await ctx.channel.send([str(t) for t in TargetParser.parce(args)])
-
-
-@commands.command(name='circle')
-async def circle(ctx):
-    members = LevelMisc.get_members(ctx.channel)
-    report = Events.circle(ctx.channel.id, members)
-    await ctx.message.reply(report)
-
-
-@commands.command(name='alltoone')
-async def alltoone(ctx):
-    members = LevelMisc.get_members(ctx.channel)
-    report = Events.all_to_one(ctx.channel.id, members)
-    await ctx.message.reply(report)
-
-
-@commands.command(name='cut')
-async def cut(ctx):
-    members = LevelMisc.get_members(ctx.channel)
-    report = Events.cut(ctx.channel.id, members)
-    await ctx.message.reply(report)
-
-
-@commands.command(name='кто')
-async def who(ctx):
-    level_daily_event.start(ctx)

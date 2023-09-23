@@ -3,6 +3,7 @@ import random
 from discord.ext import tasks
 from db.current import get_kicks_db
 from levels.events import LevelEvents
+from levels.utils.misc import LevelMisc
 
 utc = datetime.timezone.utc
 
@@ -14,9 +15,10 @@ async def kicks_daily_clear():
     uses_db.clear()
 
 
-@tasks.loop(minutes=1)
+@tasks.loop(time=datetime.time(hour=15, tzinfo=utc))
 async def level_daily_event(ctx):
     event = random.choice(LevelEvents.get_events())
-    members = [m for m in ctx.channel.members if not m.bot]
-    report = event(ctx.channel.id, members)
+    channel_id = ctx.channel.id
+    members = LevelMisc.get_members(channel_id)
+    report = event(channel_id, members)
     await ctx.channel.send(report)
