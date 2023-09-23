@@ -92,12 +92,16 @@ class LevelEvents:
         for place, (k, v) in enumerate(sorted_table):
             report += f'{place+1}. <@{k}> {v}\n'
 
-        top_score, _ = sorted_table[0]
-        match_reward = 500 / (matches * (len(members) - 1))
-        pts = table[top_score] * match_reward
-        get_levels_db().points_add(channel_id, top_score, pts)
-        report += (f'\nПобедитель турнира <@{top_score}> заработал {table[top_score]} очков и получает приз в '
-                   f'{LevelPoints.convert(pts):.2f} см.')
+        top_match_pts = max(table.values())  #get top table points
+        match_pts_count = Counter(table.values())  # find count of top points
+        winners_count = match_pts_count[top_match_pts]
+        match_reward = 500 / (winners_count * matches * (len(members) - 1))
+        pts = top_match_pts * match_reward
+        for w in sorted_table[:winners_count]:
+            winner_id, _ = w
+            get_levels_db().points_add(channel_id, winner_id, pts)
+            report += (f'\nПобедитель турнира <@{winner_id}> заработал {top_match_pts} очков и получает приз в '
+                       f'{LevelPoints.convert(pts):.2f} см.')
         return report
 
 
