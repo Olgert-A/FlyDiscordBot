@@ -110,9 +110,9 @@ class LevelEvents:
 
         team_size = random.randint(2, int(members_amount / 2))
         selected = random.sample(members, team_size * 2)
-
-        team1 = selected[:len(selected)/2]
-        team2 = selected[:-len(selected)/2]
+                
+        team1 = selected[:team_size]
+        team2 = selected[:-team_size]
 
         report = 'Командная ебка!\n\nКоманда №1:\n'
         for m in team1:
