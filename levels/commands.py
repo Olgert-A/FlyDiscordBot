@@ -172,5 +172,5 @@ async def cmd_args_info(ctx):
 @commands.command(name='тест')
 async def cmd_event_test(ctx):
     members = LevelMisc.get_members(ctx.channel)
-    report = LevelEvents.tournament(ctx.channel.id, members)
+    report = LevelEvents.team_kick(ctx.channel.id, members)
     await ctx.message.reply(report)

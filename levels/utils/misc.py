@@ -14,6 +14,10 @@ class LevelMisc:
                 return m.id
 
     @staticmethod
+    def winner(first, second):
+        return random.choice([first, second])
+
+    @staticmethod
     def phrase(points):
         phrases = {(-1000, 0): ["Отрицательный? Ты точно мужик?",
                                 "Как вообще можно отрастить минусовой член?",
