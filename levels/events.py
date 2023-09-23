@@ -129,12 +129,12 @@ class LevelEvents:
         report += (f'\nКоманда 1 вступает в гачи-поединок с Командой 2 и получает '
                    f'{LevelPoints.convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
 
-        for m_id, m_pts in team1_pts:
+        for m_id, m_pts in team1_pts.items():
             pts = int(m_pts / kick_result)
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.'
 
-        for m_id, pts in team2_pts:
+        for m_id, pts in team2_pts.items():
             pts = -int(pts / kick_result)
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.'
