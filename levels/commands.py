@@ -2,7 +2,7 @@ import asyncio
 import random
 import logging
 from discord.ext import commands
-from db.current import get_levels_db, get_kicks_db
+from db.current import get_levels_db, get_kicks_db, get_events_db
 from levels.utils.target import TargetParser, TargetKicks
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
@@ -21,6 +21,7 @@ async def cmd_levels_reg(ctx):
     for m in members:
         get_levels_db().points_add(channel_id, m.id, 0)
         get_kicks_db().add(channel_id, m.id, 0)
+        get_events_db().add(channel_id, m.id, 0)
 
     level_daily_event.start(ctx)
 
@@ -109,6 +110,11 @@ async def cmd_levels_kick(ctx, *args):
 
 @commands.command(name='ивент')
 async def cmd_start_event(ctx):
+    uses = get_events_db().get(ctx.channel.id, ctx.author.id)
+    if uses >= 1:
+        await ctx.message.reply('Ты уже использовал 1 запуск ивента, возвращайся через день!')
+        return
+
     pts = -200
     channel_id = ctx.channel.id
     get_levels_db().points_add(channel_id, ctx.author.id, pts)
@@ -118,6 +124,7 @@ async def cmd_start_event(ctx):
     event = random.choice(LevelEvents.get_events())
     members = LevelMisc.get_members(ctx.channel)
     report = event(channel_id, members)
+    get_events_db().add(ctx.channel.id, ctx.author.id, 1)
     await ctx.channel.send(report)
 
 
