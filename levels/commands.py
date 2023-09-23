@@ -23,8 +23,6 @@ async def cmd_levels_reg(ctx):
         get_kicks_db().add(channel_id, m.id, 0)
         get_events_db().add(channel_id, m.id, 0)
 
-    level_daily_event.start(ctx)
-
     await ctx.message.delete()
     await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
     !ебырь - вывод твоего уровня 
