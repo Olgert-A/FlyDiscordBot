@@ -19,6 +19,9 @@ class AbstractLevelsDB(ABC, SingletonDB):
     def channel_reg_stop(self, channel_id): pass
 
     @abstractmethod
+    def get_channels(self): pass
+
+    @abstractmethod
     def points_set(self, channel_id, user_id, points): pass
 
     @abstractmethod

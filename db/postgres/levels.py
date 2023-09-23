@@ -40,6 +40,11 @@ class LevelsDb(AbstractLevelsDB):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("DELETE FROM channels WHERE channel_id = %s;", (channel_id,))
 
+    def get_channels(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("SELECT channel_id FROM channels").fetchall()
+            return res
+
     def points_set(self, channel_id, user_id, points):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""INSERT INTO stats(reg_id, user_id, points)
