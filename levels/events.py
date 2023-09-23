@@ -1,3 +1,4 @@
+import logging
 import random
 from itertools import combinations
 from collections import Counter
@@ -109,14 +110,17 @@ class LevelEvents:
 
         team_size = random.randint(2, int(members_amount / 2))
         selected = random.sample(members, team_size * 2)
+        logging.info(selected)
 
         team1 = selected[:len(selected)]
         team2 = selected[:-len(selected)]
+        logging.info(team1)
+        logging.info(team2)
 
         report = 'Командная ебка!\n\nКоманда №1:\n'
         for m in team1:
             report += f'<@{m.id}>\n'
-        report = '\nКоманда №2:\n'
+        report += '\nКоманда №2:\n'
         for m in team2:
             report += f'<@{m.id}>\n'
 
@@ -132,11 +136,11 @@ class LevelEvents:
         for m_id, m_pts in team1_pts.items():
             pts = int(m_pts / kick_result)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.'
+            report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.\n'
 
         for m_id, pts in team2_pts.items():
             pts = -int(pts / kick_result)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.'
+            report += f'<@{m_id}>\n получает {LevelPoints.convert(pts):.2f} см.\n'
 
         return report
