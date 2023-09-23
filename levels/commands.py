@@ -135,7 +135,7 @@ async def cmd_add_points(ctx, target, points):
     members = LevelMisc.get_members(ctx.channel)
     target_id = 0
     for m in members:
-        if m.id in target:
+        if str(m.id) in target:
             target_id = m.id
             break
 
