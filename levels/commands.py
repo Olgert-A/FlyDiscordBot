@@ -124,8 +124,12 @@ async def cmd_start_event(ctx):
     event = random.choice(LevelEvents.get_events())
     members = LevelMisc.get_members(ctx.channel)
     report = event(channel_id, members)
-    get_events_db().add(ctx.channel.id, ctx.author.id, 1)
-    await ctx.channel.send(report)
+    if report:
+        get_events_db().add(ctx.channel.id, ctx.author.id, 1)
+        await ctx.channel.send(report)
+    else:
+        get_levels_db().points_add(channel_id, ctx.author.id, -pts)
+        await ctx.message.reply(f'Ладно, ивент не сработал, поинты возвращены!')
 
 
 @commands.command(name='наростить')
