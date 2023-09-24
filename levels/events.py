@@ -114,7 +114,7 @@ class LevelEvents:
         top_match_pts = max(table.values())  # get top table points
         match_pts_count = Counter(table.values())  # find count of points
         winners_count = match_pts_count[top_match_pts]  # get count of top points
-        match_reward = 500 / (winners_count * matches * (len(members) - 1))  # calc reward
+        match_reward = 500 / (winners_count * matches * (members_amount - 1))  # calc reward
         pts = top_match_pts * match_reward  # calc points
         for winner in sorted_table[:winners_count]:
             winner_id, _ = winner
@@ -157,12 +157,12 @@ class LevelEvents:
                    f'{convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
 
         for m_id, m_pts in team1_pts.items():
-            pts = int(kick_result * m_pts / team1_sum)
+            pts = int(kick_result * m_pts / max([team1_sum, 1]))
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
         for m_id, m_pts in team2_pts.items():
-            pts = -int(kick_result * m_pts / team2_sum)
+            pts = -int(kick_result * m_pts / max([team2_sum, 1]))
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
