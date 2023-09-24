@@ -32,14 +32,13 @@ class LevelEvents:
             next_index = current_index + 1
             target_index = next_index if next_index < size else next_index - size
 
-            author_id = members[current_index].id
-            target_id = members[target_index].id
+            author = members[current_index]
+            target = members[target_index]
 
-            pts_up = LevelKick.calc_by_id(channel_id, author_id, target_id)
-
-            get_levels_db().points_add(channel_id, author_id, pts_up)
-            get_levels_db().points_add(channel_id, target_id, -pts_up)
-            report += f"<@{author_id}> выбирает {name(target_id)} и получает {convert(pts_up):.2f} см.\n"
+            pts_up = LevelKick.calc_by_id(channel_id, author.id, target.id)
+            get_levels_db().points_add(channel_id, author.id, pts_up)
+            get_levels_db().points_add(channel_id, target.id, -pts_up)
+            report += f"<@{author.id}> выбирает {name(target)} и получает {convert(pts_up):.2f} см.\n"
 
         logging.info(f'Report:\n{report}')
         return report
@@ -88,6 +87,7 @@ class LevelEvents:
             return
 
         members = random.sample(members, 6 if members_amount >= 6 else members_amount)
+        member_by_id = {m.id: m for m in members}
 
         table = {m.id: 0 for m in members}
         cmb = combinations(members, 2)
@@ -104,12 +104,12 @@ class LevelEvents:
             second_pts = count[second.id]
             table[first.id] += first_pts
             table[second.id] += second_pts
-            report += f'{first_pts}:{second_pts} {name(first.id)} - {name(second.id)}\n'
+            report += f'{first_pts}:{second_pts} {name(first)} - {name(second)}\n'
 
         report += '\nТаблица:\n'
         sorted_table = sorted(table.items(), key=lambda item: item[1], reverse=True)
         for place, (k, v) in enumerate(sorted_table):
-            report += f'{place + 1}. {name(k)} {v}\n'
+            report += f'{place + 1}. {name(member_by_id[k])} {v}\n'
 
         top_match_pts = max(table.values())  # get top table points
         match_pts_count = Counter(table.values())  # find count of points
@@ -119,8 +119,8 @@ class LevelEvents:
         for winner in sorted_table[:winners_count]:
             winner_id, _ = winner
             get_levels_db().points_add(channel_id, winner_id, pts)
-            report += (f'\nПобедитель турнира {name(winner_id)} заработал {top_match_pts} очков и получает приз в '
-                       f'{convert(pts):.2f} см.')
+            report += (f'\nПобедитель турнира {name(member_by_id[winner_id])} заработал {top_match_pts} очков'
+                       f' и получает приз в {convert(pts):.2f} см.')
 
         logging.info(f'Report:\n{report}')
         return report
@@ -134,6 +134,7 @@ class LevelEvents:
 
         team_size = random.randint(2, int(members_amount / 2))
         selected = random.sample(members, team_size * 2)
+        member_by_id = {m.id: m for m in selected}
 
         team1 = selected[:team_size]
         team2 = selected[-team_size:]
@@ -158,12 +159,12 @@ class LevelEvents:
         for m_id, m_pts in team1_pts.items():
             pts = int(kick_result * m_pts / team1_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'{name(m_id)} получает {convert(pts):.2f} см.\n'
+            report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
         for m_id, m_pts in team2_pts.items():
             pts = -int(kick_result * m_pts / team2_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'{name(m_id)} получает {convert(pts):.2f} см.\n'
+            report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
         logging.info(f'Report:\n{report}')
         return report
