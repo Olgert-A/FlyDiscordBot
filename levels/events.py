@@ -8,6 +8,9 @@ from levels.utils.misc import LevelMisc
 from db.current import get_levels_db
 
 
+logging.basicConfig(level=logging.INFO)
+
+
 class LevelEvents:
     @staticmethod
     def get_events():
@@ -19,6 +22,7 @@ class LevelEvents:
 
     @staticmethod
     def circle(channel_id, members):
+        logging.info('Event: circle')
         report = "Время круговой ебки!\n"
         random.shuffle(members)
         size = len(members)
@@ -35,10 +39,13 @@ class LevelEvents:
             get_levels_db().points_add(channel_id, author_id, pts_up)
             get_levels_db().points_add(channel_id, target_id, -pts_up)
             report += f"<@{author_id}> выбирает <@{target_id}> и получает {LevelPoints.convert(pts_up):.2f} см.\n"
+
+        logging.info(f'Report:\n{report}')
         return report
 
     @staticmethod
     def all_to_one(channel_id, members):
+        logging.info('Event: all_to_one')
         random.shuffle(members)
         victim = members[0]
         others = members[1:]
@@ -55,21 +62,26 @@ class LevelEvents:
             report += f"<@{author.id}> получает {LevelPoints.convert(pts_up):.2f} см.\n"
 
         report += f"\nСуммарно жертва получила {LevelPoints.convert(victim_points):.2f} см."
+        logging.info(f'Report:\n{report}')
         return report
 
     @staticmethod
     def cut(channel_id, members):
+        logging.info('Event: cut')
         victim = random.choice(members)
 
         pts = LevelPoints.get(channel_id, victim.id)
         cut = -random.randint(0, abs(pts))
         get_levels_db().points_add(channel_id, victim.id, cut)
 
-        return (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
-                f"{LevelPoints.convert(-cut):.2f} см.")
+        report = (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
+                  f"{LevelPoints.convert(-cut):.2f} см.")
+        logging.info(f'Report:\n{report}')
+        return report
 
     @staticmethod
     def tournament(channel_id, members):
+        logging.info('Event: tournament')
         if len(members) < 2:
             return
 
@@ -102,10 +114,13 @@ class LevelEvents:
             get_levels_db().points_add(channel_id, winner_id, pts)
             report += (f'\nПобедитель турнира <@{winner_id}> заработал {top_match_pts} очков и получает приз в '
                        f'{LevelPoints.convert(pts):.2f} см.')
+
+        logging.info(f'Report:\n{report}')
         return report
 
     @staticmethod
     def team_kick(channel_id, members):
+        logging.info('Event: team_kick')
         members_amount = len(members)
         if members_amount < 4:
             return
@@ -143,4 +158,5 @@ class LevelEvents:
             get_levels_db().points_add(channel_id, m_id, pts)
             report += f'<@{m_id}> получает {LevelPoints.convert(pts):.2f} см.\n'
 
+        logging.info(f'Report:\n{report}')
         return report
