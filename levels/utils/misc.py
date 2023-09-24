@@ -3,6 +3,15 @@ import random
 
 class LevelMisc:
     @staticmethod
+    def name(member):
+        if member.nick:
+            return member.nick
+        elif member.global_name:
+            return member.global_name
+        else:
+            return member.name
+
+    @staticmethod
     def get_members(channel):
         return [m for m in channel.members if not m.bot]
 

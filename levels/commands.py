@@ -49,15 +49,7 @@ async def cmd_levels_points(ctx):
 
 @commands.command(name='ебыри')
 async def cmd_levels_table(ctx):
-    def name(member):
-        if member.nick:
-            return member.nick
-        elif member.global_name:
-            return member.global_name
-        else:
-            return member.name
-
-    members = {m.id: name(m) for m in ctx.channel.members if not m.bot}
+    members = {m.id: LevelMisc.name(m) for m in ctx.channel.members if not m.bot}
     table = get_levels_db().points_table(ctx.channel.id)
 
     if not table:

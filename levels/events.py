@@ -7,8 +7,9 @@ from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
 from db.current import get_levels_db
 
-
 logging.basicConfig(level=logging.INFO)
+name = LevelMisc.name
+convert = LevelPoints.convert
 
 
 class LevelEvents:
@@ -38,7 +39,7 @@ class LevelEvents:
 
             get_levels_db().points_add(channel_id, author_id, pts_up)
             get_levels_db().points_add(channel_id, target_id, -pts_up)
-            report += f"<@{author_id}> выбирает <@{target_id}> и получает {LevelPoints.convert(pts_up):.2f} см.\n"
+            report += f"<@{author_id}> выбирает {name(target_id)} и получает {convert(pts_up):.2f} см.\n"
 
         logging.info(f'Report:\n{report}')
         return report
@@ -49,7 +50,7 @@ class LevelEvents:
         random.shuffle(members)
         victim = members[0]
         others = members[1:]
-        report = f"Все на одного!\nЖертва дня - <@{victim.id}>\n"
+        report = f"Все на одного! Жертва дня - <@{victim.id}>\n"
 
         victim_points = 0
         for author in others:
@@ -59,9 +60,9 @@ class LevelEvents:
             get_levels_db().points_add(channel_id, author.id, pts_up)
             get_levels_db().points_add(channel_id, victim.id, -pts_up)
 
-            report += f"<@{author.id}> получает {LevelPoints.convert(pts_up):.2f} см.\n"
+            report += f"<@{author.id}> получает {convert(pts_up):.2f} см.\n"
 
-        report += f"\nСуммарно жертва получила {LevelPoints.convert(victim_points):.2f} см."
+        report += f"\nСуммарно жертва получила {convert(victim_points):.2f} см."
         logging.info(f'Report:\n{report}')
         return report
 
@@ -75,7 +76,7 @@ class LevelEvents:
         get_levels_db().points_add(channel_id, victim.id, cut)
 
         report = (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
-                  f"{LevelPoints.convert(-cut):.2f} см.")
+                  f"{convert(-cut):.2f} см.")
         logging.info(f'Report:\n{report}')
         return report
 
@@ -103,12 +104,12 @@ class LevelEvents:
             second_pts = count[second.id]
             table[first.id] += first_pts
             table[second.id] += second_pts
-            report += f'{first_pts}:{second_pts} <@{first.id}> - <@{second.id}>\n'
+            report += f'{first_pts}:{second_pts} {name(first.id)} - {name(second.id)}\n'
 
         report += '\nТаблица:\n'
         sorted_table = sorted(table.items(), key=lambda item: item[1], reverse=True)
         for place, (k, v) in enumerate(sorted_table):
-            report += f'{place + 1}. <@{k}> {v}\n'
+            report += f'{place + 1}. {name(k)} {v}\n'
 
         top_match_pts = max(table.values())  # get top table points
         match_pts_count = Counter(table.values())  # find count of points
@@ -118,8 +119,8 @@ class LevelEvents:
         for winner in sorted_table[:winners_count]:
             winner_id, _ = winner
             get_levels_db().points_add(channel_id, winner_id, pts)
-            report += (f'\nПобедитель турнира <@{winner_id}> заработал {top_match_pts} очков и получает приз в '
-                       f'{LevelPoints.convert(pts):.2f} см.')
+            report += (f'\nПобедитель турнира {name(winner_id)} заработал {top_match_pts} очков и получает приз в '
+                       f'{convert(pts):.2f} см.')
 
         logging.info(f'Report:\n{report}')
         return report
@@ -152,17 +153,17 @@ class LevelEvents:
         logging.info(f'team1: {team1_pts}\nsum: {team1_sum}\nteam2: {team2_pts}\nsum: {team2_sum}\nkick: {kick_result}')
 
         report += (f'\nКоманда 1 вступает в гачи-поединок с Командой 2 и получает '
-                   f'{LevelPoints.convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
+                   f'{convert(kick_result):.2f} см.\n\nРаспределение очков:\n')
 
         for m_id, m_pts in team1_pts.items():
             pts = int(kick_result * m_pts / team1_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'<@{m_id}> получает {LevelPoints.convert(pts):.2f} см.\n'
+            report += f'{name(m_id)} получает {convert(pts):.2f} см.\n'
 
         for m_id, m_pts in team2_pts.items():
             pts = -int(kick_result * m_pts / team2_sum)
             get_levels_db().points_add(channel_id, m_id, pts)
-            report += f'<@{m_id}> получает {LevelPoints.convert(pts):.2f} см.\n'
+            report += f'{name(m_id)} получает {convert(pts):.2f} см.\n'
 
         logging.info(f'Report:\n{report}')
         return report
