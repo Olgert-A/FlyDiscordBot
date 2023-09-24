@@ -82,14 +82,20 @@ class LevelEvents:
     @staticmethod
     def tournament(channel_id, members):
         logging.info('Event: tournament')
-        if len(members) < 2:
+        members_amount = len(members)
+        if members_amount < 2:
             return
+
+        members = random.sample(members, 6 if members_amount >= 6 else members_amount)
 
         table = {m.id: 0 for m in members}
         cmb = combinations(members, 2)
         matches = random.randint(1, 5)
-        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nМатчи:\n'
+        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nУчастники:\n'
+        for m in members:
+            report += f'<@{m.id}>\n'
 
+        report += '\nМатчи:\n'
         for first, second in cmb:
             scores = [LevelMisc.winner(first.id, second.id) for _ in range(matches)]
             count = Counter(scores)
