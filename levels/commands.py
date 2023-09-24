@@ -180,7 +180,6 @@ async def cmd_args_info(ctx):
 
 @commands.command(name='тест')
 async def cmd_event_test(ctx):
-    logging.info(get_levels_db().get_channels())
-    #members = LevelMisc.get_members(ctx.channel)
-    #report = LevelEvents.team_kick(ctx.channel.id, members)
-    #await ctx.message.reply(report)
+    members = LevelMisc.get_members(ctx.channel)
+    report = LevelEvents.team_kick(ctx.channel.id, members)
+    await ctx.message.reply(report)
