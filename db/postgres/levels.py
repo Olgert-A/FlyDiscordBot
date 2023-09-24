@@ -42,7 +42,9 @@ class LevelsDb(AbstractLevelsDB):
 
     def get_channels(self):
         with psycopg.connect(self.DATABASE_URL) as c:
+            c.row_factory = lambda cursor: lambda row: row[0]
             res = c.execute("SELECT channel_id FROM channels").fetchall()
+            c.row_factory = None
             return res
 
     def points_set(self, channel_id, user_id, points):
