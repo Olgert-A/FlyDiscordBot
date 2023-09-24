@@ -80,7 +80,7 @@ async def cmd_levels_kick(ctx, *args):
     for target in targets:
         logging.info(target)
         if target.id and not member_ids.get(target.id):
-            await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
+            await ctx.message.reply(f'{LevelMisc.name(target.id)} выебать невозможно!')
             continue
 
         for _ in range(target.kicks):
@@ -122,7 +122,7 @@ async def cmd_start_event(ctx):
         await ctx.message.reply(f'Ладно, ивент не сработал, поинты возвращены!')
 
 
-@commands.command(name='наростить')
+@commands.command(name='дать')
 async def cmd_add_points(ctx, target, points):
     if not (ctx.author.id == 776537982924619786):
         await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
