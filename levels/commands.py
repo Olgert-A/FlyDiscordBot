@@ -74,6 +74,7 @@ async def cmd_levels_kick(ctx, *args):
     targets = parsed if parsed else [TargetKicks('1')]
 
     members = LevelMisc.get_members(ctx.channel)
+    member_by_id = {m.id: m for m in members}
     member_ids = {f'{m.id}': 1 for m in members}
     logging.info(member_ids)
 
@@ -173,5 +174,6 @@ async def cmd_args_info(ctx):
 @commands.command(name='тест')
 async def cmd_event_test(ctx):
     members = LevelMisc.get_members(ctx.channel)
-    report = LevelEvents.team_kick(ctx.channel.id, members)
+    event = random.choice(LevelEvents.get_events())
+    report = event(ctx.channel.id, members)
     await ctx.message.reply(report)
