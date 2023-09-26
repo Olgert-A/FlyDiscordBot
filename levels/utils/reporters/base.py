@@ -12,7 +12,7 @@ class BaseReporter(ABC):
         return all(checks)
 
     def collect(self, data_key, **kwargs):
-        if not kwargs:
+        if not data_key or not kwargs:
             return
 
         if self.collected_data.get(data_key) is None:
