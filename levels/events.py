@@ -11,6 +11,7 @@ from db.current import get_levels_db
 logging.basicConfig(level=logging.INFO)
 name = LevelMisc.name
 convert = LevelPoints.convert
+levels_db = get_levels_db()
 
 
 class LevelEvents:
@@ -33,12 +34,10 @@ class LevelEvents:
             next_index = current_index + 1
             target_index = next_index if next_index < size else next_index - size
 
-            author = members[current_index]
-            target = members[target_index]
-
+            author, target = members[current_index], members[target_index]
             pts_up = LevelKick.calc_by_id(channel_id, author.id, target.id)
-            get_levels_db().points_add(channel_id, author.id, pts_up)
-            get_levels_db().points_add(channel_id, target.id, -pts_up)
+            levels_db.points_add(channel_id, author.id, pts_up)
+            levels_db.points_add(channel_id, target.id, -pts_up)
             reporter.collect(data_key='actions', author=author, target=target, pts=pts_up)
 
         report = reporter.get_report()
@@ -58,8 +57,8 @@ class LevelEvents:
             pts_up = LevelKick.calc_by_id(channel_id, author.id, victim.id)
             victim_points -= pts_up
 
-            get_levels_db().points_add(channel_id, author.id, pts_up)
-            get_levels_db().points_add(channel_id, victim.id, -pts_up)
+            levels_db.points_add(channel_id, author.id, pts_up)
+            levels_db.points_add(channel_id, victim.id, -pts_up)
 
             report += f"<@{author.id}> получает {convert(pts_up):.2f} см.\n"
 
@@ -74,7 +73,7 @@ class LevelEvents:
 
         pts = LevelPoints.get(channel_id, victim.id)
         cut = -random.randint(0, abs(pts))
-        get_levels_db().points_add(channel_id, victim.id, cut)
+        levels_db.points_add(channel_id, victim.id, cut)
 
         report = (f"<@{victim.id}> забрёл не в тот район, встретил бродячую собаку, которая откусила ему "
                   f"{convert(-cut):.2f} см.")
@@ -120,7 +119,7 @@ class LevelEvents:
         pts = top_match_pts * match_reward  # calc points
         for winner in sorted_table[:winners_count]:
             winner_id, _ = winner
-            get_levels_db().points_add(channel_id, winner_id, pts)
+            levels_db.points_add(channel_id, winner_id, pts)
             report += (f'\nПобедитель турнира {name(member_by_id[winner_id])} заработал {top_match_pts} очков'
                        f' и получает приз в {convert(pts):.2f} см.')
 
@@ -148,8 +147,8 @@ class LevelEvents:
         for m in team2:
             report += f'<@{m.id}>\n'
 
-        team1_pts = {m.id: get_levels_db().points_get(channel_id, m.id) for m in team1}
-        team2_pts = {m.id: get_levels_db().points_get(channel_id, m.id) for m in team2}
+        team1_pts = {m.id: levels_db.points_get(channel_id, m.id) for m in team1}
+        team2_pts = {m.id: levels_db.points_get(channel_id, m.id) for m in team2}
         team1_sum = sum(team1_pts.values())
         team2_sum = sum(team2_pts.values())
         kick_result = LevelKick.calc_by_pts(team1_sum, team2_sum)
@@ -160,12 +159,12 @@ class LevelEvents:
 
         for m_id, m_pts in team1_pts.items():
             pts = int(kick_result * m_pts / max([team1_sum, 1]))
-            get_levels_db().points_add(channel_id, m_id, pts)
+            levels_db.points_add(channel_id, m_id, pts)
             report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
         for m_id, m_pts in team2_pts.items():
             pts = -int(kick_result * m_pts / max([team2_sum, 1]))
-            get_levels_db().points_add(channel_id, m_id, pts)
+            levels_db.points_add(channel_id, m_id, pts)
             report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
 
         logging.info(f'Report:\n{report}')
