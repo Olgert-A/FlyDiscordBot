@@ -13,10 +13,12 @@ class CircleReporter(BaseReporter):
 
     def get_report(self) -> str:
         if not self._check_collected():
-            return ''
+            return self.CHECK_ERROR_STR
 
         data = self.collected_data
-        report = f"{data['event_name']}\n"
+        event_name = data['event_name']
+
+        report = f'{event_name}\n'
         for action in data['actions']:
             author, target, pts = action['author'], action['target'], action['pts']
             report += f"<@{author.id}> выбирает {name(target)} и получает {convert(pts):.2f} см.\n"

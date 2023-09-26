@@ -5,6 +5,7 @@ class BaseReporter(ABC):
     def __init__(self, event_name=''):
         self.collected_data = {'event_name': event_name}
         self.awaited_data_keys = []
+        self.CHECK_ERROR_STR = 'Ивент прошёл успешно, но хуесос программист не смог зарепортить отчёт'
 
     def _check_collected(self):
         checks = [self.collected_data.get(key) is not None
