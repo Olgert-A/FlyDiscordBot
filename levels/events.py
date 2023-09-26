@@ -5,6 +5,7 @@ from collections import Counter
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
+from levels.utils.reporters import *
 from db.current import get_levels_db
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +25,7 @@ class LevelEvents:
     @staticmethod
     def circle(channel_id, members):
         logging.info('Event: circle')
-        report = "Время круговой ебки!\n"
+        reporter = CircleReporter()
         random.shuffle(members)
         size = len(members)
 
@@ -38,8 +39,9 @@ class LevelEvents:
             pts_up = LevelKick.calc_by_id(channel_id, author.id, target.id)
             get_levels_db().points_add(channel_id, author.id, pts_up)
             get_levels_db().points_add(channel_id, target.id, -pts_up)
-            report += f"<@{author.id}> выбирает {name(target)} и получает {convert(pts_up):.2f} см.\n"
+            reporter.collect(author=author, target=target, pts=pts_up)
 
+        report = reporter.get_report()
         logging.info(f'Report:\n{report}')
         return report
 
