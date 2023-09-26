@@ -15,7 +15,7 @@ async def kicks_daily_clear():
     uses_db.clear()
 
 
-@tasks.loop(time=datetime.time(hour=15, minute=50, tzinfo=utc))
+@tasks.loop(time=datetime.time(hour=15, tzinfo=utc))
 async def level_daily_event(channels):
     get_events_db().clear()
 
