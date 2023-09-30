@@ -31,6 +31,10 @@ def main():
         channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
 
+    @client.tree.command(name='hello')
+    async def hello(interaction: discord.Interaction):
+        await interaction.response.send_message('Slash hello')
+
     @client.event
     async def on_message(message):
         await client.process_commands(message)
