@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.INFO)
 def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
-    @client.tree.command(name='test', description='Find hof1k % in yourself')
-    async def test(ctx: discord.Interaction):
+    @client.tree.command(name='hof1k', description='Find hof1k % in yourself')
+    async def hof1k(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
     @client.event
