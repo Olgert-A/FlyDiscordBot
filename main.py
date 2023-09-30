@@ -21,8 +21,11 @@ def main():
     @client.event
     async def on_ready():
         print(f"{client.user.name} connected.")
-        for server in client.guilds:
-            await client.tree.sync(guild=discord.Object(id=server.id))
+        try:
+            synced = await client.tree.sync()
+            logging.info(f'Sync result = {synced}')
+        except Exception as e:
+            logging.exception(e)
 
         kicks_daily_clear.start()
         channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
