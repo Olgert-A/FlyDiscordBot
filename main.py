@@ -29,7 +29,8 @@ def main():
     async def hof1k(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
-    @client.tree.command(name='любовь')
+    @client.tree.command(name='любовь', description='Проверь любовь этих двоих')
+    @app_commands.rename(who='Кто', target='Цель')
     @app_commands.describe(who='Чью любовь проверяешь', target='Любовь к кому/чему проверяешь')
     async def hof1k(ctx: discord.Interaction, who: str, target: str):
         def format_param(param):
