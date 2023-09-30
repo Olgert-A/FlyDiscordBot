@@ -35,6 +35,10 @@ def main():
     async def hello(interaction: discord.Interaction):
         await interaction.response.send_message('Slash hello')
 
+    @client.tree.command(name='pidor')
+    async def pidor(interaction: discord.Interaction):
+        await interaction.response.send_message('Ty pidor')
+
     @client.event
     async def on_message(message):
         await client.process_commands(message)
