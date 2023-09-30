@@ -34,7 +34,7 @@ def main():
         await interaction.response.send_message('Ty pidor')
 
     @commands.command(name='sync')
-    async def cmd_add_points(ctx):
+    async def cmd_sync(ctx):
         if not (ctx.author.id == 776537982924619786):
             await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
             return
@@ -53,6 +53,8 @@ def main():
 
     for cmd in to_use:
         client.add_command(cmd)
+
+    client.add_command(cmd_sync)
     client.run(os.getenv("DISCORD_TOKEN"))
 
 
