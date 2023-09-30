@@ -30,13 +30,12 @@ def main():
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
     @client.tree.command(name='любовь')
-    @app_commands.rename(source='кого', destination='к кому')
-    @app_commands.describe(source='Чью любовь проверяешь', destination='Любовь к кому/чему проверяешь')
-    async def hof1k(ctx: discord.Interaction, source: str, destination: str):
+    @app_commands.describe(who='Чью любовь проверяешь', target='Любовь к кому/чему проверяешь')
+    async def hof1k(ctx: discord.Interaction, who: str, target: str):
         def format_param(param):
             return f'<@{param.id}>' if isinstance(param, discord.Member) else param
 
-        await ctx.response.send_message(f"Любовь {source} к {destination} составляет {random.randint(0, 100)}%!")
+        await ctx.response.send_message(f"Любовь {who} к {target} составляет {random.randint(0, 100)}%!")
 
     @client.event
     async def on_message(message):
