@@ -2,7 +2,7 @@ import os
 import discord
 import logging
 import random
-from typing import Union
+from discord import app_commands
 from discord.ext import commands
 from commands.register import to_use
 from db.current import get_levels_db
@@ -30,11 +30,13 @@ def main():
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
     @client.tree.command(name='любовь')
+    @app_commands.rename(source='кого', destination='к кому')
+    @app_commands.describe(source='Чью любовь проверяешь', destination='Любовь к кому/чему проверяешь')
     async def hof1k(ctx: discord.Interaction, source: str, destination: str):
         def format_param(param):
             return f'<@{param.id}>' if isinstance(param, discord.Member) else param
 
-        await ctx.response.send_message(f"Любовь {format_param(source)} к {format_param(destination)} составляет {random.randint(0, 100)}%!")
+        await ctx.response.send_message(f"Любовь {source} к {destination} составляет {random.randint(0, 100)}%!")
 
     @client.event
     async def on_message(message):
