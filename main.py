@@ -30,7 +30,7 @@ def main():
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
     @client.tree.command(name='любовь')
-    async def hof1k(ctx: discord.Interaction, source: Union[int, discord.Member], destination: str):
+    async def hof1k(ctx: discord.Interaction, source: str, destination: str):
         def format_param(param):
             return f'<@{param.id}>' if isinstance(param, discord.Member) else param
 
