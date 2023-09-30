@@ -24,7 +24,7 @@ def main():
         channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
 
-    @client.tree.command(name='hof1k', description='Find hof1k % in yourself')
+    @client.tree.command(name='хофик', description='Проверь, сколько в тебе хофика')
     async def hof1k(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
