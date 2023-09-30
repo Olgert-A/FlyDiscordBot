@@ -28,6 +28,10 @@ def main():
     async def hof1k(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
+    @client.tree.command(name='любовь')
+    async def hof1k(ctx: discord.Interaction, source: discord.Member, destination: str):
+        await ctx.response.send_message(f"Любовь <@{source.id}> к {destination} составляет {random.randint(0, 100)}%!")
+
     @client.event
     async def on_message(message):
         await client.process_commands(message)
