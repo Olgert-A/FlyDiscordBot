@@ -2,8 +2,6 @@ import os
 import discord
 import logging
 import random
-from discord import app_commands
-from discord.interactions import InteractionResponse
 from discord.ext import commands
 from commands.register import to_use
 from db.current import get_levels_db
@@ -15,16 +13,17 @@ logging.basicConfig(level=logging.INFO)
 
 def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-    tree = app_commands.CommandTree(client)
 
-    @tree.command(name='хофик')
+    @client.tree.command(name='хофик')
     async def on_gay(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
     @client.event
     async def on_ready():
         print(f"{client.user.name} connected.")
-        await tree.sync()
+        for server in client.guilds:
+            await client.tree.sync(guild=discord.Object(id=server.id))
+
         kicks_daily_clear.start()
         channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
