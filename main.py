@@ -21,12 +21,6 @@ def main():
     @client.event
     async def on_ready():
         print(f"{client.user.name} connected.")
-        try:
-            synced = await client.tree.sync()
-            logging.info(f'Sync result = {synced}')
-        except Exception as e:
-            logging.exception(e)
-
         kicks_daily_clear.start()
         channels = [client.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
@@ -38,6 +32,15 @@ def main():
     @client.tree.command(name='pidor')
     async def pidor(interaction: discord.Interaction):
         await interaction.response.send_message('Ty pidor')
+
+    @commands.command(name='sync')
+    async def cmd_add_points(ctx):
+        if not (ctx.author.id == 776537982924619786):
+            await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
+            return
+
+        synced = await client.tree.sync()
+        await ctx.message.reply(f'Commands synced: {len(synced)}')
 
     @client.event
     async def on_message(message):
