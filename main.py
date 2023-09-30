@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
-    @client.tree.command(name='хофик')
+    @client.tree.command(name='hof1k', description='Find hof1k % in yourself')
     async def on_gay(ctx: discord.Interaction):
         await ctx.response.send_message(f"Сегодня ты хофик на {random.randint(0, 100)}%!")
 
