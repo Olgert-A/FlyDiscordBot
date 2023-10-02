@@ -37,7 +37,7 @@ class LevelEvents:
             pts_up = LevelKick.calc_by_id(channel_id, author.id, target.id)
             levels_db.points_add(channel_id, author.id, pts_up)
             levels_db.points_add(channel_id, target.id, -pts_up)
-            reporter.collect('actions', author, target, pts_up)
+            reporter.collect('actions', author, target, pts_up, as_list=True)
 
         return reporter.get_report()
 
@@ -56,7 +56,7 @@ class LevelEvents:
 
             levels_db.points_add(channel_id, author.id, pts_up)
             levels_db.points_add(channel_id, victim.id, -pts_up)
-            reporter.collect('actions', author, pts_up)
+            reporter.collect('actions', author, pts_up, as_list=True)
 
         reporter.collect('victim_pts', victim_points)
         return reporter.get_report()
