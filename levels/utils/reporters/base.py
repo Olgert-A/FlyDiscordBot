@@ -27,7 +27,6 @@ class BaseReporter(ABC):
         as_list = True - if args are a repeated part of a large amount of data, set  and data by data_ket will be list
         object. Every call of collect will add args as new element of list.
         """
-        logging.info(f'Collect called with key={data_key} data={args} as_list={as_list}.')
         if not data_key or not args:
             return
 
@@ -35,12 +34,10 @@ class BaseReporter(ABC):
         if as_list:
             if self.data.get(data_key) is None:
                 self.data[data_key] = []
-            else:
-                self.data[data_key].append(data)
+
+            self.data[data_key].append(data)
         else:
             self.data[data_key] = data
-        
-        logging.info(f'Data state after: {self.data}')
 
     def get_report(self) -> str:
         if not self._check_collected():
