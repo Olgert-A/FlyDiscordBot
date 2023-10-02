@@ -88,7 +88,7 @@ class LevelEvents:
         table = {m.id: 0 for m in members}
 
         for first, second in combinations(members, 2):
-            matches = [LevelMisc.winner(first, second) for _ in range(matches_count)]
+            matches = [LevelMisc.winner(first.id, second.id) for _ in range(matches_count)]
 
             for match_winner in matches:
                 table[match_winner.id] += 1
