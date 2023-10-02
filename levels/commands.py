@@ -150,6 +150,16 @@ async def cmd_add_points(ctx, target, points):
     await ctx.message.reply(f"Поинты добавлены!")
 
 
+@commands.command(name='индульгенция')
+async def cmd_kicks_clear(ctx):
+    if not (ctx.author.id == 776537982924619786):
+        await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
+        return
+
+    uses_db = get_kicks_db()
+    uses_db.clear()
+    await ctx.message.reply(f"Индульгенция проведена, ебитесь на здоровье!")
+
 @commands.command(name='инфо')
 async def cmd_args_info(ctx):
     await ctx.message.reply(
