@@ -81,7 +81,7 @@ async def cmd_levels_kick(ctx, *args):
     for target in targets:
         logging.info(target)
         if target.id:
-            if not member_ids.get(target.id) or target.id == ctx.author.id:
+            if not member_ids.get(target.id) or int(target.id) == ctx.author.id:
                 await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
                 continue
 
