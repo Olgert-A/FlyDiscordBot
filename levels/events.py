@@ -1,7 +1,6 @@
 import logging
 import random
 from itertools import combinations
-from collections import Counter
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
@@ -38,19 +37,17 @@ class LevelEvents:
             pts_up = LevelKick.calc_by_id(channel_id, author.id, target.id)
             levels_db.points_add(channel_id, author.id, pts_up)
             levels_db.points_add(channel_id, target.id, -pts_up)
-            reporter.collect(data_key='actions', author=author, target=target, pts=pts_up)
+            reporter.collect('actions', author, target, pts_up)
 
-        report = reporter.get_report()
-        logging.info(f'Report:\n{report}')
-        return report
+        return reporter.get_report()
 
     @staticmethod
     def all_to_one(channel_id, members):
         logging.info('Event: all_to_one')
         random.shuffle(members)
-        victim = members[0]
-        others = members[1:]
-        report = f"Все на одного! Жертва дня - <@{victim.id}>\n"
+        victim, others = members[0], members[1:]
+        reporter = AllToOneReporter()
+        reporter.collect('victim', victim)
 
         victim_points = 0
         for author in others:
@@ -59,12 +56,10 @@ class LevelEvents:
 
             levels_db.points_add(channel_id, author.id, pts_up)
             levels_db.points_add(channel_id, victim.id, -pts_up)
+            reporter.collect('actions', author, pts_up)
 
-            report += f"<@{author.id}> получает {convert(pts_up):.2f} см.\n"
-
-        report += f"\nСуммарно жертва получила {convert(victim_points):.2f} см."
-        logging.info(f'Report:\n{report}')
-        return report
+        reporter.collect('victim_pts', victim_points)
+        return reporter.get_report()
 
     @staticmethod
     def cut(channel_id, members):
@@ -83,48 +78,37 @@ class LevelEvents:
     @staticmethod
     def tournament(channel_id, members):
         logging.info('Event: tournament')
+        reporter = TournamentReporter()
         members_amount = len(members)
         if members_amount < 2:
             return
 
+        matches_count = random.randint(1, 5)
         members = random.sample(members, 6 if members_amount >= 6 else members_amount)
-        member_by_id = {m.id: m for m in members}
-
         table = {m.id: 0 for m in members}
-        cmb = combinations(members, 2)
-        matches = random.randint(1, 5)
-        report = f'Турнир! Каждый с каждым играет {matches} матчей.\n\nУчастники:\n'
-        for m in members:
-            report += f'<@{m.id}>\n'
 
-        report += '\nМатчи:\n'
-        for first, second in cmb:
-            scores = [LevelMisc.winner(first.id, second.id) for _ in range(matches)]
-            count = Counter(scores)
-            first_pts = count[first.id]
-            second_pts = count[second.id]
-            table[first.id] += first_pts
-            table[second.id] += second_pts
-            report += f'{first_pts}:{second_pts} {name(first)} - {name(second)}\n'
+        for first, second in combinations(members, 2):
+            matches = [LevelMisc.winner(first, second) for _ in range(matches_count)]
 
-        report += '\nТаблица:\n'
-        sorted_table = sorted(table.items(), key=lambda item: item[1], reverse=True)
-        for place, (k, v) in enumerate(sorted_table):
-            report += f'{place + 1}. {name(member_by_id[k])} {v}\n'
+            for match_winner in matches:
+                table[match_winner] += 1
+            reporter.collect('matches', first, second, matches, as_list=True)
 
-        top_match_pts = max(table.values())  # get top table points
-        match_pts_count = Counter(table.values())  # find count of points
-        winners_count = match_pts_count[top_match_pts]  # get count of top points
-        match_reward = 500 / (winners_count * matches * (members_amount - 1))  # calc reward
-        pts = top_match_pts * match_reward  # calc points
-        for winner in sorted_table[:winners_count]:
-            winner_id, _ = winner
-            levels_db.points_add(channel_id, winner_id, pts)
-            report += (f'\nПобедитель турнира {name(member_by_id[winner_id])} заработал {top_match_pts} очков'
-                       f' и получает приз в {convert(pts):.2f} см.')
+        win_score = max(table.values())
+        winners = [m_id for m_id, score in table.items() if score == win_score]  # get winners
+        pts_for_match = 500 / (len(winners) * matches_count * (members_amount - 1))  # calc reward for 1 match
+        reward = win_score * pts_for_match
 
-        logging.info(f'Report:\n{report}')
-        return report
+        for winner_id in winners:
+            levels_db.points_add(channel_id, winner_id, reward)
+
+        reporter.collect('competitors', members)
+        reporter.collect('matches_count', matches_count)
+        reporter.collect('table', table)
+        reporter.collect('winners', winners)
+        reporter.collect('reward', reward)
+
+        return reporter.get_report()
 
     @staticmethod
     def team_kick(channel_id, members):
