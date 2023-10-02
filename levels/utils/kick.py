@@ -4,6 +4,7 @@ from db.current import get_levels_db, get_kicks_db
 from levels.utils.points import LevelPoints
 
 logging.basicConfig(level=logging.INFO)
+convert = LevelPoints.convert
 
 
 class LevelKick:
@@ -19,12 +20,27 @@ class LevelKick:
 
     @staticmethod
     def calc_by_pts(author_pts, target_pts):
+        def calc_sign(pts_delta):
+            # chance y = f(x)
+            # need to min x=0.5
+            # get x=0.5 y=0.5 | x=2.5 y~0.7 | x=5 y~0.8 | x=10+ y=0.9
+            chance = 1 - 1 / (pow(convert(pts_delta) + 0.5, 0.8) + 1)
+            win = random.randint(1, 100) < 100 * chance
+            return 1 if win else -1
+
+        def get_min_pts(to_value):
+            for x in range(100000):
+                if abs(convert(x) - to_value) < 0.001:
+                    return x
+
         delta = abs(author_pts - target_pts)
-        pts = random.randint(int(delta / 2), delta)
-        range_limits = [-author_pts, target_pts]
-        chance = random.randint(min(range_limits), max(range_limits)) / max([abs(author_pts), abs(target_pts), 1])
-        logging.info(f'pts: {pts}\nlimits: {range_limits}\nchance: {chance}')
-        return int(pts * chance)
+        min_pts = get_min_pts(0.5)
+        delta = delta if delta > min_pts else min_pts
+
+        reward = random.randint(min_pts, delta)
+        sign = calc_sign(delta)
+        logging.info(f'reward:{reward} sign:{sign}')
+        return int(reward * sign)
 
     @staticmethod
     def calc_by_id(channel_id, author_id, target_id) -> int:
