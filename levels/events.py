@@ -84,11 +84,13 @@ class LevelEvents:
             return
 
         matches_count = random.randint(1, 5)
+        logging.info(matches_count)
         members = random.sample(members, 6 if members_amount >= 6 else members_amount)
         table = {m.id: 0 for m in members}
 
         for first, second in combinations(members, 2):
             matches = [LevelMisc.winner(first, second) for _ in range(matches_count)]
+            logging.info(matches)
 
             for match_winner in matches:
                 table[match_winner.id] += 1
