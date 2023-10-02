@@ -90,8 +90,8 @@ class LevelEvents:
         for first, second in combinations(members, 2):
             matches = [LevelMisc.winner(first.id, second.id) for _ in range(matches_count)]
 
-            for match_winner in matches:
-                table[match_winner.id] += 1
+            for winner_id in matches:
+                table[winner_id] += 1
             reporter.collect('matches', first, second, matches, as_list=True)
 
         win_score = max(table.values())
