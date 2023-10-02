@@ -80,9 +80,10 @@ async def cmd_levels_kick(ctx, *args):
 
     for target in targets:
         logging.info(target)
-        if target.id and not member_ids.get(target.id):
-            await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
-            continue
+        if target.id:
+            if not member_ids.get(target.id) or target.id == ctx.author.id:
+                await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
+                continue
 
         for _ in range(target.kicks):
             if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
