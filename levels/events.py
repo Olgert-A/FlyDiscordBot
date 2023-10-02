@@ -91,7 +91,7 @@ class LevelEvents:
             matches = [LevelMisc.winner(first, second) for _ in range(matches_count)]
 
             for match_winner in matches:
-                table[match_winner] += 1
+                table[match_winner.id] += 1
             reporter.collect('matches', first, second, matches, as_list=True)
 
         win_score = max(table.values())
