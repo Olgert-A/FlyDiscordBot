@@ -10,11 +10,11 @@ logging.basicConfig(level=logging.INFO)
 
 async def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-    cogs = ['cogs.fun', 'cogs.listeners']
+    cogs = ['cogs.listeners']
     for cog in cogs:
         await client.load_extension(cog)
 
-    #register_commands(client)
+    register_commands(client)
 #    await register_cogs(client)
     await client.start(os.getenv("DISCORD_TOKEN"))
 
