@@ -8,6 +8,6 @@ cogs = [
 ]
 
 
-def register_cogs(client: commands.Bot):
+async def register_cogs(client: commands.Bot):
     for cog in cogs:
-        client.add_cog(cog(client))
+        await client.add_cog(cog(client))
