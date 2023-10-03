@@ -15,5 +15,5 @@ class FunCog(commands.Cog):
     @app_commands.command(name='любовь', description='Проверь любовь этих двоих')
     @app_commands.rename(who='чья', target='к-кому')
     @app_commands.describe(who='Чью любовь проверяешь', target='Любовь к кому/чему проверяешь')
-    async def hof1k(ctx: discord.Interaction, who: str, target: str):
+    async def love(self, ctx: discord.Interaction, who: str, target: str):
         await ctx.response.send_message(f"Любовь {who} к {target} составляет {random.randint(0, 100)}%!")
