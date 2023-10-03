@@ -13,16 +13,6 @@ class ListenerCog(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_ready(self):
-        logging.info(f"{self.bot.user.name} connected.")
-
-        await self.bot.tree.sync()
-
-        kicks_daily_clear.start()
-        channels = [self.bot.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
-        level_daily_event.start(channels)
-
-    @commands.Cog.listener()
     async def on_message(self, message):
         await self.bot.process_commands(message)
 
