@@ -14,8 +14,9 @@ async def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
     register_commands(client)
     await register_cogs(client)
-    client.run(os.getenv("DISCORD_TOKEN"))
+    await client.start(os.getenv("DISCORD_TOKEN"))
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.get_event_loop().run_until_complete(main())
+
