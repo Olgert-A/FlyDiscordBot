@@ -25,7 +25,7 @@ async def on_ready(self):
     level_daily_event.start(channels)
 
 
-async def main():
+def main():
     register_commands(client)
 #    await register_cogs(client)
     client.run(os.getenv("DISCORD_TOKEN"))
