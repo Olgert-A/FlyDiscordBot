@@ -18,6 +18,23 @@ class FunCog(commands.Cog):
     async def love(self, ctx: discord.Interaction, who: str, target: str):
         await ctx.response.send_message(f"Любовь {who} к {target} составляет {random.randint(0, 100)}%!")
 
+    @app_commands.command(name='пидор', description='Найди пидора дня')
+    async def pidor(self, ctx: discord.Interaction):
+        members = [m for m in ctx.message.channel.members if not m.bot]
+        await ctx.response.send_message(f"Пидор дня обнаружен, и это <@{random.choice(members).id}>!")
+
+    @app_commands.command(name='дрочило', description='Узнай, какой ты дрочило')
+    async def droch(self, ctx: discord.Interaction):
+        sheet = ['желанный', 'незабываемый', 'мрачный', 'изящный', 'вазелиновый', 'ловкий', 'дерзкий', 'опытный',
+                 'знойный',
+                 'меланхоличный', 'боевой', 'усердный', 'грациозный', 'ветреный', 'коридорный', 'превосходный',
+                 'голландский', 'мохнатый', 'нахальный', 'наглый', 'непревзойдённый', 'алчный', 'игривый',
+                 'жизнерадостный',
+                 'легкомысленный', 'заводной', 'беззаботный', 'ленивый', 'назойливый', 'душный', 'безрассудный',
+                 'ироничный', 'импозантный', 'беспощадный']
+
+        await ctx.response.send_message(f"Сегодня ты {random.choice(sheet)} дрочило!")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(FunCog(bot))

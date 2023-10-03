@@ -24,8 +24,6 @@ class ListenerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        #await self.bot.process_commands(message)
-
         if not message.author.bot:
             get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
 

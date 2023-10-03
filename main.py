@@ -3,18 +3,15 @@ import discord
 import logging
 import asyncio
 from discord.ext import commands
+from cogs.registerer import register_cogs
 
 logging.basicConfig(level=logging.INFO)
 
 
 async def main():
-    client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-
-    cogs = ['cogs.fun', 'cogs.listeners', 'cogs.levels']
-    for cog in cogs:
-        await client.load_extension(cog)
-
-    await client.start(os.getenv("DISCORD_TOKEN"))
+    bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+    await register_cogs(bot)
+    await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
 if __name__ == '__main__':
