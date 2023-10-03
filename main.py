@@ -14,7 +14,7 @@ async def main():
     for cog in cogs:
         await client.load_extension(cog)
 
-    register_commands(client)
+    #register_commands(client)
 #    await register_cogs(client)
     await client.start(os.getenv("DISCORD_TOKEN"))
 
