@@ -14,7 +14,7 @@ async def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
     register_commands(client)
     await register_cogs(client)
-    await client.start(os.getenv("DISCORD_TOKEN"))
+    client.run(os.getenv("DISCORD_TOKEN"))
 
 
 if __name__ == '__main__':
