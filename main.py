@@ -10,9 +10,9 @@ logging.basicConfig(level=logging.INFO)
 
 async def main():
     client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-    for file in os.listdir('./cogs'):
-        if file.endswith('.py'):
-            await client.load_extension(f'cogs.{file[:-3]}')
+    cogs = ['cogs.fun', 'cogs.listeners']
+    for cog in cogs:
+        await client.load_extension(cog)
 
     register_commands(client)
 #    await register_cogs(client)
