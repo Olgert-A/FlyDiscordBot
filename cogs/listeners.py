@@ -28,3 +28,7 @@ class ListenerCog(commands.Cog):
 
         if not message.author.bot:
             get_levels_db().points_add(message.channel.id, message.author.id, LevelPoints.generate())
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(ListenerCog(bot))
