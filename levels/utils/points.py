@@ -5,7 +5,7 @@ from db.current import get_levels_db
 class LevelPoints:
     @staticmethod
     def generate():
-        return random.randint(-3, 10)
+        return random.randint(-6, 10)
 
     @staticmethod
     def convert(points):
