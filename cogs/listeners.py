@@ -1,7 +1,11 @@
+import logging
+
 from discord.ext import commands
 from db.current import get_levels_db
 from levels.utils.points import LevelPoints
 from levels.tasks import kicks_daily_clear, level_daily_event
+
+logging.basicConfig(level=logging.INFO)
 
 
 class ListenerCog(commands.Cog):
@@ -10,7 +14,7 @@ class ListenerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"{self.bot.user.name} connected.")
+        logging.info(f"{self.bot.user.name} connected.")
 
         await self.bot.tree.sync()
 
