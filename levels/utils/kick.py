@@ -21,7 +21,7 @@ class LevelKick:
     @staticmethod
     def calc_by_pts(author_pts, target_pts):
         def calc_chance(pts_delta):
-            # calc win chance for author if author pts < target pts
+            # calc win chance for user with LOWER points
             # chance y = f(x)
             # need to min x=0.5
             # get x=0.5 y=0.5 | x=2.5 y~0.7 | x=5 y~0.8 | x=10+ y=0.9
@@ -42,8 +42,19 @@ class LevelKick:
         min_pts = get_min_pts(0.5)
         delta = delta if delta > min_pts else min_pts
 
+        win_chance = calc_chance(delta)
+        sign = calc_sign(win_chance)
+
+        # this factor limits max points to compensate for the large score gap if win user with bigger pts
+        limit_conditions = [sign < 0 and author_pts < target_pts,
+                            sign > 0 and author_pts > target_pts]
+        if any(limit_conditions):
+            max_pts_factor = (1 - win_chance) * 2
+        else:
+            max_pts_factor = 1
+
         sign = calc_sign(delta)
-        reward = random.randint(min_pts, delta)
+        reward = random.randint(min_pts, int(max_pts_factor * delta))
         logging.info(f'sign:{sign} reward:{reward}')
         return int(reward * sign)
 
