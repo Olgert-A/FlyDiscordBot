@@ -44,8 +44,9 @@ class LevelKick:
         sign = calc_sign(win_chance)
 
         # this factor limits max points to compensate for the large score gap if win user with bigger pts
-        if ((sign < 0 and author_pts < target_pts) or
-                (sign > 0 and author_pts > target_pts)):
+        limit_conditions = [sign < 0 and author_pts < target_pts,
+                            sign > 0 and author_pts > target_pts]
+        if any(limit_conditions):
             max_pts_factor = (1 - win_chance) * 2
         else:
             max_pts_factor = 1
