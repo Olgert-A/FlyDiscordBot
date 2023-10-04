@@ -54,7 +54,7 @@ class LevelKick:
         else:
             max_pts_factor = 1
 
-        reward = random.randint(min_pts, int(max_pts_factor * delta))
+        reward = random.randint(min_pts, delta)
         logging.info(f'chance:{win_chance} limit_cond:{limit_conditions} max_pts_factor:{max_pts_factor}')
         logging.info(f'sign:{sign} reward:{reward}')
         return int(reward * sign)
