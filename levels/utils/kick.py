@@ -27,9 +27,9 @@ class LevelKick:
             # get x=0.5 y=0.5 | x=2.5 y~0.7 | x=5 y~0.8 | x=10+ y=0.9
             return 1 - 1 / (pow(convert(pts_delta) + 0.5, 0.8) + 1)
 
-        def calc_sign(pts_delta):
+        def calc_sign(chance):
             value = random.randint(1, 100)
-            chance = 100 * calc_chance(pts_delta)
+            chance = 100 * chance
             win = value < chance if author_pts < target_pts else value > chance
             logging.info(f'value: {value} chance:{chance} win:{win}')
             return 1 if win else -1
