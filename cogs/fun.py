@@ -2,6 +2,7 @@ import discord
 import random
 from discord import app_commands
 from discord.ext import commands
+from levels.utils.misc import LevelMisc
 
 
 class FunCog(commands.Cog):
@@ -20,7 +21,7 @@ class FunCog(commands.Cog):
 
     @app_commands.command(name='пидор', description='Найди пидора дня')
     async def pidor(self, ctx: discord.Interaction):
-        members = [m for m in ctx.message.channel.members if not m.bot]
+        members = LevelMisc.get_members(ctx.channel)
         await ctx.response.send_message(f"Пидор дня обнаружен, и это <@{random.choice(members).id}>!")
 
     @app_commands.command(name='дрочило', description='Узнай, какой ты дрочило')
