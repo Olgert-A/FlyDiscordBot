@@ -9,13 +9,13 @@ utc = datetime.timezone.utc
 
 
 @tasks.loop(time=[datetime.time(hour=3, tzinfo=utc),
-                  datetime.time(hour=16, tzinfo=utc)])
+                  datetime.time(hour=15, tzinfo=utc)])
 async def kicks_daily_clear():
     uses_db = get_kicks_db()
     uses_db.clear()
 
 
-@tasks.loop(time=datetime.time(hour=16, tzinfo=utc))
+@tasks.loop(time=datetime.time(hour=15, tzinfo=utc))
 async def level_daily_event(channels):
     get_events_db().clear()
 
