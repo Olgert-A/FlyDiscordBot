@@ -66,27 +66,23 @@ class LevelsCog(commands.Cog):
 
     @commands.command(name='выебать')
     async def cmd_levels_kick(self, ctx, *, arg_string=''):
-        if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
-            await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
-            return
-
         members = LevelMisc.get_members(ctx.channel)
-        member_ids = [m.id for m in members]
+        allowed_to_kick = [m.id for m in members if m.id != ctx.author.id]
 
         for target in TargetParser.parce(arg_string):
             logging.info(target)
 
             if target.id == MemberIdKicks.TARGET_RANDOM:
-                target.id = random.choice(member_ids)
-
-            if target.id not in member_ids or target.id == ctx.author.id:
-                await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
-                continue
+                target.id = random.choice(allowed_to_kick)
 
             for _ in range(target.kicks):
                 if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
                     await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
                     return
+
+                if target.id not in allowed_to_kick:
+                    await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
+                    break
 
                 pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target.id)
                 LevelKick.add_use(ctx.channel.id, ctx.author.id)
