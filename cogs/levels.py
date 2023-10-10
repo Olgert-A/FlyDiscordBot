@@ -65,7 +65,7 @@ class LevelsCog(commands.Cog):
         await ctx.message.reply('\n'.join(points))
 
     @commands.command(name='выебать')
-    async def cmd_levels_kick(self, ctx, *, arg_string):
+    async def cmd_levels_kick(self, ctx, *, arg_string=''):
         if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
             await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
             return
