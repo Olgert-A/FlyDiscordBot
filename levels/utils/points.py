@@ -3,6 +3,8 @@ from db.current import get_levels_db
 
 
 class LevelPoints:
+    KICK_MINIMUM_POINTS = 50
+
     @staticmethod
     def generate():
         return random.randint(0, 10)

@@ -3,7 +3,7 @@ import random
 import logging
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db, get_events_db
-from levels.utils.target import TargetParser, TargetKicks
+from levels.utils.target import TargetParser, MemberIdKicks
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
@@ -65,38 +65,34 @@ class LevelsCog(commands.Cog):
         await ctx.message.reply('\n'.join(points))
 
     @commands.command(name='выебать')
-    async def cmd_levels_kick(self, ctx, *args):
+    async def cmd_levels_kick(self, ctx, *, arg_string):
         if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
             await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
             return
 
-        parsed = TargetParser.parce(args)
-        targets = parsed if parsed else [TargetKicks('1')]
-
         members = LevelMisc.get_members(ctx.channel)
-        member_by_id = {m.id: m for m in members}
-        member_ids = {f'{m.id}': 1 for m in members}
-        logging.info(member_ids)
+        member_ids = [m.id for m in members]
 
-        for target in targets:
+        for target in TargetParser.parce(arg_string):
             logging.info(target)
-            if target.id:
-                if not member_ids.get(target.id) or int(target.id) == ctx.author.id:
-                    await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
-                    continue
+
+            if target.id == MemberIdKicks.TARGET_RANDOM:
+                target.id = random.choice(member_ids)
+
+            if target.id not in member_ids or target.id == ctx.author.id:
+                await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
+                continue
 
             for _ in range(target.kicks):
                 if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
                     await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
                     return
 
-                target_id = target.id if target.id else random.choice(members).id
-
-                pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target_id)
+                pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target.id)
                 LevelKick.add_use(ctx.channel.id, ctx.author.id)
 
                 await ctx.message.reply(
-                    f"Ты подкрадываешься к <@{target_id}> и делаешь {random.randint(1, 10)} фрикций, "
+                    f"Ты подкрадываешься к <@{target.id}> и делаешь {random.randint(1, 10)} фрикций, "
                     f"получив {LevelPoints.convert(pts):.2f} см.")
 
     @commands.command(name='ивент')

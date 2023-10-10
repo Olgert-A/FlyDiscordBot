@@ -19,14 +19,15 @@ class LevelKick:
         get_kicks_db().add(channel_id, author_id, 1)
 
     @staticmethod
-    def calc_by_pts(author_pts, target_pts):
-        def calc_chance(pts_delta):
-            # calc win chance for user with LOWER points
-            # chance y = f(x)
-            # need to min x=0.5
-            # get x=0.5 y=0.5 | x=2.5 y~0.7 | x=5 y~0.8 | x=10+ y=0.9
-            return 1 - 1 / (pow(convert(pts_delta) + 0.5, 0.8) + 1)
+    def calc_chance(pts_delta):
+        # calc win chance for user with LOWER points
+        # this function used for converted points model
+        # chance y = f(x)
+        # get x=0.5 y=0.5 | x=2.5 y~0.7 | x=5 y~0.8 | x=10+ y=0.9
+        return 1 - 1 / (pow(convert(pts_delta) + 0.5, 0.8) + 1)
 
+    @staticmethod
+    def calc_by_pts(author_pts, target_pts):
         def calc_sign(chance):
             value = random.randint(1, 100)
             chance = 100 * chance
@@ -34,16 +35,11 @@ class LevelKick:
             logging.info(f'value: {value} chance:{chance} win:{win}')
             return 1 if win else -1
 
-        def get_min_pts(to_value):
-            for x in range(100000):
-                if abs(convert(x) - to_value) < 0.001:
-                    return x
-
         delta = abs(author_pts - target_pts)
-        min_pts = get_min_pts(0.5)
+        min_pts = LevelPoints.KICK_MINIMUM_POINTS
         delta = delta if delta > min_pts else min_pts
 
-        win_chance = calc_chance(delta)
+        win_chance = LevelKick.calc_chance(delta)
         sign = calc_sign(win_chance)
 
         # this factor limits max points to compensate for the large score gap if win user with bigger pts
