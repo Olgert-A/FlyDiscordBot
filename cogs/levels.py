@@ -30,13 +30,9 @@ class LevelsCog(commands.Cog):
                           description='Административная команда для сброса ограничения использования команд')
     @check_bot_author_permission()
     @app_commands.rename(what_reset='на-что')
-    @app_commands.choices(
-        what_reset=[
-            app_commands.Choice(name='ебку', value=1),
-            app_commands.Choice(name='ивенты', value=2),
-            app_commands.Choice(name='всё', value=3)
-        ]
-    )
+    @app_commands.choices(what_reset=[app_commands.Choice(name='ебку', value=1),
+                                      app_commands.Choice(name='ивенты', value=2),
+                                      app_commands.Choice(name='всё', value=3)])
     async def reset(self, ctx: discord.Interaction, what_reset: app_commands.Choice[int]):
         if what_reset.value == 1:
             get_kicks_db().clear()
@@ -47,165 +43,120 @@ class LevelsCog(commands.Cog):
             get_events_db().clear()
         await ctx.response.send_message(f"Выдана индульгенция на {what_reset.name}!")
 
-    @commands.command(name='лвл-рег')
-    async def cmd_levels_reg(self, ctx):
-        channel_id = ctx.channel.id
-        get_levels_db().channel_reg(channel_id)
+    @app_commands.command(name='дать',
+                          description='Административная команда для выдачи поинтов пользователям')
+    @check_bot_author_permission()
+    @app_commands.rename(target='кому', points='сколько')
+    async def give(self, ctx: discord.Interaction, target: discord.Member, points: int):
+        if target not in LevelMisc.get_members(ctx.channel):
+            await ctx.response.send_message("Этому пользователю нельзя выдать поинты!", ephemeral=True)
+
+        get_levels_db().points_add(ctx.channel.id, target.id, points)
+        await ctx.response.send_message("Поинты добавлены!")
+
+    @app_commands.command(name='подключить',
+                          description='Административная команда для подключения канала к системе рейтинга')
+    @check_bot_author_permission()
+    async def levels_reg(self, ctx: discord.Interaction):
+        get_levels_db().channel_reg(ctx.channel.id)
         members = LevelMisc.get_members(ctx.channel)
         for m in members:
-            get_levels_db().points_add(channel_id, m.id, 0)
-            get_kicks_db().add(channel_id, m.id, 0)
-            get_events_db().add(channel_id, m.id, 0)
+            get_levels_db().points_add(ctx.channel.id, m.id, 0)
+            get_kicks_db().add(ctx.channel.id, m.id, 0)
+            get_events_db().add(ctx.channel.id, m.id, 0)
 
-        await ctx.message.delete()
-        await ctx.channel.send(f"""Канал зарегистрирован в программе **Ебырьметр**! Каждое сообщение пользователя может как повысить, так и понизить уровень. 
-        !ебырь - вывод твоего уровня 
-        !ебыри - таблица уровней""")
+        await ctx.response.send_message(f'Канал зарегистрирован в программе **Ебырьметр**!', ephemeral=True)
 
-    @commands.command(name='лвл-стоп')
-    async def cmd_levels_stop(self, ctx):
+    @app_commands.command(name='отключить',
+                          description='Административная команда для отключения канала от системы рейтинга')
+    @check_bot_author_permission()
+    async def levels_stop(self, ctx: discord.Interaction):
         get_levels_db().channel_reg_stop(ctx.channel.id)
         level_daily_event.stop()
-        await ctx.message.delete()
-        await ctx.channel.send(f"Канал больше не участвует в программе **Ебырьметр**")
+        await ctx.response.send_message(f"Канал больше не участвует в программе **Ебырьметр**", ephemeral=True)
 
-    @commands.command(name='ебырь')
-    async def cmd_levels_points(self, ctx):
-        if not (points := get_levels_db().points_get(ctx.channel.id, ctx.author.id)):
-            await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
+    @app_commands.command(name='ебырь',
+                          description='Узнай свой рейтинг')
+    async def get_points(self, ctx: discord.Interaction):
+        if not (points := get_levels_db().points_get(ctx.channel.id, ctx.user.id)):
+            await ctx.response.send_message(f"Не удалось получить рейтинг, повтори запрос позже.", ephemeral=True)
             return
 
         points = LevelPoints.convert(points)
-        await ctx.message.reply(f"У тебя {points} см. " + LevelMisc.phrase(points))
+        await ctx.response.send_message(f"У тебя {points} см. " + LevelMisc.phrase(points))
 
-    @commands.command(name='ебыри')
-    async def cmd_levels_table(self, ctx):
-        members = {m.id: LevelMisc.name(m) for m in ctx.channel.members if not m.bot}
+    @app_commands.command(name='ебыры',
+                          description='Таблица рейтинга')
+    async def get_table(self, ctx: discord.Interaction):
+        member_names = {m.id: LevelMisc.name(m) for m in LevelMisc.get_members(ctx.channel)}
         table = get_levels_db().points_table(ctx.channel.id)
 
         if not table:
-            await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
+            await ctx.response.send_message(f"Не удалось получить таблицу, повтори запрос позже.", ephemeral=True)
             return
 
         table = sorted(table.items(), key=lambda v: v[1], reverse=True)
 
-        points = [f"{i}. {name}: {LevelPoints.convert(v)} см."
-                  for i, (p, v) in enumerate(table)
-                  if (name := members.get(p))]
-        await ctx.message.reply('\n'.join(points))
+        points = [f"{position}. {name}: {LevelPoints.convert(points)} см."
+                  for position, (m_id, points) in enumerate(table)
+                  if (name := member_names.get(m_id))]
+        await ctx.response.send_message('\n'.join(points))
 
-    @commands.command(name='выебать')
-    async def cmd_levels_kick(self, ctx, *, arg_string=''):
+    @app_commands.command(name='выебать',
+                          description='Вступить в схватку с кем-то за разницу между вашими рейтингами')
+    @app_commands.rename(target_string='цели-ебки')
+    @app_commands.describe(target_string='Список парных значений вида <тег цели> <количество ебок>. Цель без тега - '
+                                         'ебка указанных количеством рандомов. Цель без количества - одна ебка. '
+                                         'Пустая строка - одна ебка рандома')
+    async def kick(self, ctx: discord.Interaction, target_string=''):
+        report = ''
         members = LevelMisc.get_members(ctx.channel)
-        allowed_to_kick = [m.id for m in members if m.id != ctx.author.id]
+        allowed_to_kick = [m.id for m in members if m.id != ctx.user.id]
 
-        for target in TargetParser.parce(arg_string):
+        for target in TargetParser.parce(target_string):
             logging.info(target)
 
             if target.id == MemberIdKicks.TARGET_RANDOM:
                 target.id = random.choice(allowed_to_kick)
 
             for _ in range(target.kicks):
-                if LevelKick.get_uses(ctx.channel.id, ctx.author.id) >= LevelKick.MAX_KICK_USES:
-                    await ctx.message.reply("Ты уже выебал 3 раза, возвращайся через полдня!")
+                if LevelKick.get_uses(ctx.channel.id, ctx.user.id) >= LevelKick.MAX_KICK_USES:
+                    report += "Ты уже выебал 3 раза, возвращайся через полдня!"
+                    await ctx.response.send_message(report)
                     return
 
                 if target.id not in allowed_to_kick:
-                    await ctx.message.reply(f'<@{target.id}> выебать невозможно!')
+                    report += f'<@{target.id}> выебать невозможно!'
                     break
 
-                pts = LevelKick.execute(ctx.channel.id, ctx.author.id, target.id)
-                LevelKick.add_use(ctx.channel.id, ctx.author.id)
+                pts = LevelKick.execute(ctx.channel.id, ctx.user.id, target.id)
+                LevelKick.add_use(ctx.channel.id, ctx.user.id)
 
-                await ctx.message.reply(
-                    f"Ты подкрадываешься к <@{target.id}> и делаешь {random.randint(1, 10)} фрикций, "
-                    f"получив {LevelPoints.convert(pts):.2f} см.")
+                report += f"Ты подкрадываешься к <@{target.id}> и делаешь {random.randint(1, 10)} фрикций, " \
+                          f"получив {LevelPoints.convert(pts):.2f} см."
 
-    @commands.command(name='ивент')
-    async def cmd_start_event(self, ctx):
-        uses = get_events_db().get(ctx.channel.id, ctx.author.id)
+        await ctx.response.send_message(report)
+
+    @app_commands.command(name='ивент',
+                          description='Запустить случайный ивент (раз в день, потратив часть рейтинга)')
+    async def event(self, ctx: discord.Interaction):
+        uses = get_events_db().get(ctx.channel.id, ctx.user.id)
         if uses >= 1:
-            await ctx.message.reply('Ты уже использовал 1 запуск ивента, возвращайся через день!')
+            await ctx.response.send_message('Ты уже использовал ивент, возвращайся после 18мск!', ephemeral=True)
             return
 
         pts = -200
-        channel_id = ctx.channel.id
-        get_levels_db().points_add(channel_id, ctx.author.id, pts)
-        await ctx.message.reply(f'Ты тратишь {LevelPoints.convert(pts):.2f} см. и запускаешь случайный ивент!')
-        await asyncio.sleep(1)
+        get_levels_db().points_add(ctx.channel_id, ctx.user.id, pts)
 
         event = random.choice(LevelEvents.get_events())
         members = LevelMisc.get_members(ctx.channel)
-        report = event(channel_id, members)
+        report = event(ctx.channel_id, members)
         if report:
-            get_events_db().add(ctx.channel.id, ctx.author.id, 1)
-            await ctx.channel.send(report)
+            get_events_db().add(ctx.channel.id, ctx.user.id, 1)
+            await ctx.response.send_message(report)
         else:
-            get_levels_db().points_add(channel_id, ctx.author.id, -pts)
-            await ctx.message.reply(f'Ладно, ивент не сработал, поинты возвращены!')
-
-    @commands.command(name='дать')
-    async def cmd_add_points(self, ctx, target, points):
-        if not (ctx.author.id == 776537982924619786):
-            await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
-            return
-
-        pts = int(points)
-        if not pts:
-            await ctx.message.reply(f"Поинты должны быть числом <:pepe_loh:1022083481725063238>")
-            return
-
-        members = LevelMisc.get_members(ctx.channel)
-        target_id = 0
-        for m in members:
-            if str(m.id) in target:
-                target_id = m.id
-                break
-
-        if not target_id:
-            await ctx.message.reply(f"Тегни цель <:pepe_loh:1022083481725063238>")
-            return
-
-        get_levels_db().points_add(ctx.channel.id, target_id, pts)
-        await ctx.message.reply(f"Поинты добавлены!")
-
-    @commands.command(name='индульгенция')
-    async def cmd_kicks_clear(self, ctx):
-        if not (ctx.author.id == 776537982924619786):
-            await ctx.message.reply(f"Sasi <:pepe_loh:1022083481725063238>")
-            return
-
-        uses_db = get_kicks_db()
-        uses_db.clear()
-        await ctx.message.reply(f"Индульгенция проведена, ебитесь на здоровье!")
-
-    @commands.command(name='инфо')
-    async def cmd_args_info(self, ctx):
-        await ctx.message.reply(
-            """Каждое сообщение пользователя может как повысить, так и понизить уровень. 
-    !ебырь - вывод твоего уровня 
-    !ебыри - таблица уровней
-    !выебать <тег цели> <число раз> - выебать тегнутого участника заданное количество раз.
-
-    Можно выебать 3 раза в полдня, сброс использований происходит в 6 мск.
-    По-умолчанию число раз = 1 и может не указываться. 
-    Можно указывать несколько тегов через пробел. 
-    Число раз без тега выберет данное число рандомных участников и выебет.
-
-    Пример ебки (вместо имён должны быть теги):
-    !выебать 3 - выебет 3 рандомных
-    !выебать 1 коляс 2 - выебет 1 рандомного и дважды коляса
-    !выебать ольгерт айваз хофик - выебет указанных по 1 разу
-    !выебать коляс хаханим 2 - выебет 1 раз коляса и 2 раза хаханим
-    !выебать айваз любойтекст 2 - выебет 1 раз айваза и 2 рандомов"""
-        )
-
-    @commands.command(name='тест')
-    async def cmd_event_test(self, ctx):
-        members = LevelMisc.get_members(ctx.channel)
-        event = random.choice(LevelEvents.get_events())
-        report = event(ctx.channel.id, members)
-        await ctx.message.reply(report)
+            get_levels_db().points_add(ctx.channel_id, ctx.user.id, -pts)
+            await ctx.response.send_message(f'По каким-то причинам ивент не сработал, поинты возвращены!', ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
