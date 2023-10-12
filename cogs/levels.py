@@ -108,7 +108,7 @@ class LevelsCog(commands.Cog):
     @app_commands.describe(target_string='Список парных значений вида <тег цели> <количество ебок>. Цель без тега - '
                                          'ебка указанных количеством рандомов. Цель без количества - одна ебка. '
                                          'Пустая строка - одна ебка рандома')
-    async def kick(self, ctx: discord.Interaction, target_string=''):
+    async def kick(self, ctx: discord.Interaction, target_string: str = ''):
         report = ''
         members = LevelMisc.get_members(ctx.channel)
         allowed_to_kick = [m.id for m in members if m.id != ctx.user.id]
@@ -126,14 +126,13 @@ class LevelsCog(commands.Cog):
                     return
 
                 if target.id not in allowed_to_kick:
-                    report += f'<@{target.id}> выебать невозможно!'
+                    report += f'<@{target.id}> выебать невозможно!\n'
                     break
 
                 pts = LevelKick.execute(ctx.channel.id, ctx.user.id, target.id)
                 LevelKick.add_use(ctx.channel.id, ctx.user.id)
-
                 report += f"Ты подкрадываешься к <@{target.id}> и делаешь {random.randint(1, 10)} фрикций, " \
-                          f"получив {LevelPoints.convert(pts):.2f} см."
+                          f"получив {LevelPoints.convert(pts):.2f} см.\n"
 
         await ctx.response.send_message(report)
 
