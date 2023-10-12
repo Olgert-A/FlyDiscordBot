@@ -12,15 +12,32 @@ class ListenerCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        logging.info(f"{self.bot.user.name} connected.")
-
+    async def bot_init(self):
         await self.bot.tree.sync()
 
         kicks_daily_clear.start()
         channels = [self.bot.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        logging.info(f"{self.bot.user.name} connected.")
+        await self.bot_init()
+
+    @commands.Cog.listener()
+    async def on_resumed(self):
+        logging.info(f"{self.bot.user.name} resumed.")
+        await self.bot_init()
+
+    @commands.Cog.listener()
+    async def on_shard_ready(self):
+        logging.info(f"{self.bot.user.name} shard ready.")
+        await self.bot_init()
+
+    @commands.Cog.listener()
+    async def on_shard_resumed(self):
+        logging.info(f"{self.bot.user.name} shard resumed.")
+        await self.bot_init()
 
     @commands.Cog.listener()
     async def on_message(self, message):
