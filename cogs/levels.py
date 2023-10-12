@@ -105,9 +105,7 @@ class LevelsCog(commands.Cog):
     @app_commands.command(name='выебать',
                           description='Вступить в схватку с кем-то за разницу между вашими рейтингами')
     @app_commands.rename(target_string='цели-ебки')
-    @app_commands.describe(target_string='Список парных значений вида <тег цели> <количество ебок>. Цель без тега - '
-                                         'ебка указанных количеством рандомов. Цель без количества - одна ебка. '
-                                         'Пустая строка - одна ебка рандома')
+    @app_commands.describe(target_string='Список парных значений вида <тег цели> <количество ебок>')
     async def kick(self, ctx: discord.Interaction, target_string: str = ''):
         report = ''
         members = LevelMisc.get_members(ctx.channel)
