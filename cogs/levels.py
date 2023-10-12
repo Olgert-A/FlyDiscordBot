@@ -19,8 +19,7 @@ class LevelsCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @staticmethod
-    def check_bot_author_permission():
+    def check_bot_author_permission(self):
         def predicate(interaction: discord.Interaction) -> bool:
             return interaction.user.id == 776537982924619786
         return app_commands.check(predicate)
