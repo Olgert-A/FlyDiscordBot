@@ -15,14 +15,16 @@ from levels.tasks import level_daily_event
 logging.basicConfig(level=logging.INFO)
 
 
+def check_bot_author_permission():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id == 776537982924619786
+
+    return app_commands.check(predicate)
+
+
 class LevelsCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-    def check_bot_author_permission(self):
-        def predicate(interaction: discord.Interaction) -> bool:
-            return interaction.user.id == 776537982924619786
-        return app_commands.check(predicate)
 
     @app_commands.command(name='индульгенция',
                           description='Административная команда для сброса ограничения использования команд')
