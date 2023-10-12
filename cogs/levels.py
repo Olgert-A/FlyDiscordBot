@@ -1,6 +1,8 @@
 import asyncio
 import random
 import logging
+import discord
+from discord import app_commands
 from discord.ext import commands
 from db.current import get_levels_db, get_kicks_db, get_events_db
 from levels.utils.target import TargetParser, MemberIdKicks
@@ -16,6 +18,33 @@ logging.basicConfig(level=logging.INFO)
 class LevelsCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @staticmethod
+    def check_bot_author_permission():
+        def predicate(interaction: discord.Interaction) -> bool:
+            return interaction.user.id == 776537982924619786
+        return app_commands.check(predicate)
+
+    @app_commands.command(name='индульгенция',
+                          description='Административная команда для сброса ограничения использования команд')
+    @check_bot_author_permission()
+    @app_commands.rename(what_reset='на-что')
+    @app_commands.choices(
+        what_reset=[
+            app_commands.Choice(name='ебку', value=1),
+            app_commands.Choice(name='ивенты', value=2),
+            app_commands.Choice(name='всё', value=3)
+        ]
+    )
+    async def reset(self, ctx: discord.Interaction, what_reset: app_commands.Choice[int]):
+        if what_reset.value == 1:
+            get_kicks_db().clear()
+        if what_reset.value == 2:
+            get_events_db().clear()
+        if what_reset.value == 3:
+            get_kicks_db().clear()
+            get_events_db().clear()
+        await ctx.response.send_message(f"Выдана индульгенция на {what_reset.name}!")
 
     @commands.command(name='лвл-рег')
     async def cmd_levels_reg(self, ctx):
