@@ -85,7 +85,7 @@ class LevelsCog(commands.Cog):
         points = LevelPoints.convert(points)
         await ctx.response.send_message(f"У тебя {points} см. " + LevelMisc.phrase(points))
 
-    @app_commands.command(name='ебыры',
+    @app_commands.command(name='ебыри',
                           description='Таблица рейтинга')
     async def get_table(self, ctx: discord.Interaction):
         member_names = {m.id: LevelMisc.name(m) for m in LevelMisc.get_members(ctx.channel)}
