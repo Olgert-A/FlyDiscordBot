@@ -41,4 +41,14 @@ class TargetParser:
         if not targets:
             targets.append(MemberIdKicks('1'))
 
-        return targets
+        # N-random kicks mean 1 kick of N random targets (not N kicks of one random target).
+        # need to divide into several random targets with kicks=1 if MemberIdKicks with id=TARGET_RANDOM have kicks > 1
+        result = []
+        for target in targets:
+            if target.id == MemberIdKicks.TARGET_RANDOM:
+                for _ in range(target.kicks):
+                    result.append(MemberIdKicks('1'))
+            else:
+                result.append(target)
+
+        return result
