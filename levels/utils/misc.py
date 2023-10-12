@@ -1,26 +1,21 @@
 import random
+import discord
+from typing import List
 
 
 class LevelMisc:
     @staticmethod
-    def name(member):
+    def name(member: discord.Member) -> str:
         if member.nick:
-            return member.nick
+            return f'**{member.nick}**'
         elif member.global_name:
-            return member.global_name
+            return f'**{member.global_name}**'
         else:
-            return member.name
+            return f'**{member.name}**'
 
     @staticmethod
-    def get_members(channel):
+    def get_members(channel: discord.TextChannel) -> List[discord.Member]:
         return [m for m in channel.members if not m.bot]
-
-    @staticmethod
-    def get_target_id(target, members):
-        # if m.id in target return m.id else return None
-        for m in members:
-            if str(m.id) in target:
-                return m.id
 
     @staticmethod
     def winner(first, second):

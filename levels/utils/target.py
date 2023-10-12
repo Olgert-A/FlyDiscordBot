@@ -34,6 +34,8 @@ class TargetParser:
         """
         Parce arg_string to list of MemberIdKicks data classes.
 
+        N kicks without target will be interpreted as one kick of N random targets.
+
         If arg_string can't be parsed, return one target with MemberIdKicks TARGET_RANDOM and DEFAULT_KICKS constants
         """
         target_strings = re.findall(r'<@\d+>\s+\d+|<@\d+>|(?<!\S)\d+(?!\S)', arg_string)
