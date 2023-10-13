@@ -1,6 +1,8 @@
 import logging
 import random
+import discord
 from itertools import combinations
+from typing import List
 from levels.utils.points import LevelPoints
 from levels.utils.kick import LevelKick
 from levels.utils.misc import LevelMisc
@@ -20,7 +22,8 @@ class LevelEvents:
                 LevelEvents.all_to_one,
                 LevelEvents.cut,
                 LevelEvents.tournament,
-                LevelEvents.team_kick]
+                LevelEvents.team_kick,
+                LevelEvents.extension]
 
     @staticmethod
     def circle(channel_id, members):
@@ -151,6 +154,26 @@ class LevelEvents:
             pts = -int(kick_result * m_pts / max([team2_sum, 1]))
             levels_db.points_add(channel_id, m_id, pts)
             report += f'{name(member_by_id[m_id])} получает {convert(pts):.2f} см.\n'
+
+        logging.info(f'Report:\n{report}')
+        return report
+
+    @staticmethod
+    def extension(channel_id, members: List[discord.Member]):
+        logging.info('Event: extension')
+        report = 'В чат входит огромный волосатый негр и пристально высматривает цели!\n'
+        event_pts = 1000
+        members_amount = len(members)
+        target_amount = random.randint(1, 3)
+        targets = random.sample(members, target_amount if target_amount <= members_amount else members_amount)
+
+        for num, target in enumerate(targets):
+            targets_left = target_amount - num - 1
+            max_pts = event_pts - 100 * targets_left
+            pts = random.randint(100, max_pts)
+            levels_db.points_add(channel_id, target.id, pts)
+            report += f'Выбор пал на <@{target.id}>, который получает {convert(pts):.2f} см.\n'
+            event_pts -= pts
 
         logging.info(f'Report:\n{report}')
         return report
