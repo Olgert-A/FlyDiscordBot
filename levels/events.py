@@ -96,8 +96,9 @@ class LevelEvents:
 
         win_score = max(table.values())
         winners = [m_id for m_id, score in table.items() if score == win_score]  # get winners
-        pts_for_match = 500 / (len(winners) * matches_count * (members_amount - 1))  # calc reward for 1 match
-        reward = win_score * pts_for_match
+        #pts_for_match = 500 / (len(winners) * matches_count * (members_amount - 1))  # calc reward for 1 match
+        all_player_match_count = (members_amount - 1) * matches_count
+        reward = 500 * win_score / all_player_match_count
 
         for winner_id in winners:
             levels_db.points_add(channel_id, winner_id, reward)
