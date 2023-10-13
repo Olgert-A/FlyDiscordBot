@@ -155,6 +155,18 @@ class LevelsCog(commands.Cog):
             get_levels_db().points_add(ctx.channel_id, ctx.user.id, -pts)
             await ctx.response.send_message(f'По каким-то причинам ивент не сработал, поинты возвращены!', ephemeral=True)
 
+    @app_commands.command(name='тест',
+                          description='Административная отладочная команда')
+    @check_bot_author_permission()
+    async def test(self, ctx: discord.Interaction):
+        members = LevelMisc.get_members(ctx.channel)
+        report = LevelEvents.extension(ctx.channel.id, members)
+
+        if report:
+            await ctx.response.send_message(report)
+        else:
+            await ctx.response.send_message('Не сработало')
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(LevelsCog(bot))
