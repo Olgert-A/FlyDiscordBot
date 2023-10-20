@@ -161,10 +161,10 @@ class LevelEvents:
     @staticmethod
     def extension(channel_id, members: List[discord.Member]):
         logging.info('Event: extension')
-        report = 'В чат входит огромный волосатый негр и пристально высматривает цели!\n'
-        event_pts = 1000
+        report = 'В чат входит огромный волосатый негр и пристально высматривает цель!\n'
+        event_pts = 500
         members_amount = len(members)
-        target_amount = random.randint(1, 3)
+        target_amount = 1
         targets = random.sample(members, target_amount if target_amount <= members_amount else members_amount)
 
         for num, target in enumerate(targets):

@@ -7,7 +7,7 @@ class LevelPoints:
 
     @staticmethod
     def generate():
-        return random.randint(0, 10)
+        return random.randint(-6, 10)
 
     @staticmethod
     def convert(points):
