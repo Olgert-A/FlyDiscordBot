@@ -5,6 +5,7 @@ import asyncio
 from discord.ext import commands
 from cogs.registerer import register_cogs
 
+
 logging.basicConfig(level=logging.INFO)
 
 
