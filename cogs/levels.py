@@ -52,6 +52,8 @@ class LevelsCog(commands.Cog):
             await ctx.response.send_message("Этому пользователю нельзя выдать поинты!", ephemeral=True)
 
         get_levels_db().points_add(ctx.channel.id, target.id, points)
+        get_kicks_db().add(ctx.channel.id, target.id, 0)
+        get_events_db().add(ctx.channel.id, target.id, 0)
         await ctx.response.send_message("Поинты добавлены!")
 
     @app_commands.command(name='подключить',
