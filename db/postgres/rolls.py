@@ -9,12 +9,14 @@ logging.basicConfig(level=logging.INFO)
 class RollsDb(AbstractRollsDB):
     def __init__(self, database_url):
         super().__init__(database_url)
+        self._drop_tables()
         self._guilds_create()
         self._rolls_create()
 
     def _drop_tables(self):
+        logging.debug('dropped')
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE IF EXISTS guilds; DROP TABLE IF EXISTS rolls;""")
+            c.execute("""DROP TABLE IF EXISTS guilds, rolls;""")
 
     def _guilds_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
