@@ -38,9 +38,10 @@ class RollsCog(commands.Cog):
 
         await ctx.response.send_message(f'Канал отписан от программы **Сердечки**!', ephemeral=True)
 
-    @app_commands.command(name='крутить')
+    @app_commands.command(name='крутить',
+                          description='Рулетка сердечек')
     @app_commands.rename(roll_pts='сердечки')
-    @app_commands.describe(who='Сколько крутим')
+    @app_commands.describe(roll_pts='Сколько крутим')
     async def roll(self, ctx: discord.Interaction, roll_pts: int):
         if roll_pts < 0:
             await ctx.response.send_message(f"Низя крутить, когда твои сердечки кончились")
@@ -55,8 +56,9 @@ class RollsCog(commands.Cog):
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
         await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек.")
-        
-    @app_commands.command(name='сердечки')
+
+    @app_commands.command(name='сердечки',
+                          description='Узнай, сколько у тебя сердечек')
     async def points(self, ctx: discord.Interaction):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
         await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек.")
