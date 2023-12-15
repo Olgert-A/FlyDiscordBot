@@ -28,7 +28,7 @@ async def level_daily_event(channels):
         await channel.send(report)
 
 
-@tasks.loop(time=datetime.time(minute=5, tzinfo=utc))
+@tasks.loop(minutes=5)
 async def roll_points_event(guilds: List[discord.Guild]):
     for guild in guilds:
         for member in guild.members:
