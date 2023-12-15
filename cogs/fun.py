@@ -40,10 +40,15 @@ class FunCog(commands.Cog):
         await ctx.response.send_message(f"Сегодня ты {random.choice(sheet)} дрочило!")
 
     @app_commands.command(name='пнуть', description='дотянись ногой до жеппы своей любимки')
-    @app_commands.checks.cooldown(1, 60)
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def kick(self, ctx: discord.Interaction):
         members = LevelMisc.get_members(ctx.channel)
         await ctx.response.send_message(f'{name(ctx.user)} пинает по жеппе {name(random.choice(members))}! <3')
+
+    @kick.error
+    async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(str(error), ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
