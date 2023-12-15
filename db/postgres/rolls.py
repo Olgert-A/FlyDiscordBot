@@ -9,9 +9,14 @@ logging.basicConfig(level=logging.INFO)
 class RollsDb(AbstractRollsDB):
     def __init__(self, database_url):
         super().__init__(database_url)
+        self._drop_tables()
         self._guilds_create()
         self._rolls_create()
 
+    def _drop_tables(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""DROP TABLE IF EXISTS guilds; DROP TABLE IF EXISTS rolls;""")
+            
     def _guilds_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS guilds (
@@ -26,7 +31,7 @@ class RollsDb(AbstractRollsDB):
                 reg_id SERIAL,
                 user_id BIGINT NOT NULL,
                 points INTEGER,
-                FOREIGN KEY (reg_id) REFERENCES Channels (id) ON DELETE CASCADE,
+                FOREIGN KEY (reg_id) REFERENCES guilds (id) ON DELETE CASCADE,
                 UNIQUE(reg_id, user_id)
                 );""")
 
