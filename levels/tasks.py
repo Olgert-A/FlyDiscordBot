@@ -1,7 +1,9 @@
 import datetime
 import random
+
+import discord
 from discord.ext import tasks
-from db.current import get_kicks_db, get_events_db
+from db.current import get_kicks_db, get_events_db, get_rolls_db
 from levels.events import LevelEvents
 from levels.utils.misc import LevelMisc
 
@@ -24,3 +26,8 @@ async def level_daily_event(channels):
         members = LevelMisc.get_members(channel)
         report = event(channel.id, members)
         await channel.send(report)
+
+
+@tasks.loop(time=datetime.time(minute=5, tzinfo=utc))
+async def roll_points_add():
+    get_rolls_db().get_guilds()
