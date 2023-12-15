@@ -5,6 +5,9 @@ from discord.ext import commands
 from levels.utils.misc import LevelMisc
 
 
+name = LevelMisc.name
+
+
 class FunCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -35,6 +38,11 @@ class FunCog(commands.Cog):
                  'ироничный', 'импозантный', 'беспощадный']
 
         await ctx.response.send_message(f"Сегодня ты {random.choice(sheet)} дрочило!")
+
+    @app_commands.command(name='пнуть', description='дотянись ногой до жеппы своей любимки')
+    async def kick(self, ctx: discord.Interaction):
+        members = LevelMisc.get_members(ctx.channel)
+        await ctx.response.send_message(f'{name(ctx.user)} пинает по жеппе {name(random.choice(members))}! <3')
 
 
 async def setup(bot: commands.Bot):
