@@ -1,9 +1,9 @@
 import logging
 
 from discord.ext import commands
-from db.current import get_levels_db
+from db.current import get_levels_db, get_rolls_db
 from levels.utils.points import LevelPoints
-from levels.tasks import kicks_daily_clear, level_daily_event
+from levels.tasks import kicks_daily_clear, level_daily_event, roll_points_event
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,6 +18,8 @@ class ListenerCog(commands.Cog):
         kicks_daily_clear.start()
         channels = [self.bot.get_channel(channel_id) for channel_id in get_levels_db().get_channels()]
         level_daily_event.start(channels)
+        guilds = [self.bot.get_guild(guild_id) for guild_id in get_rolls_db().get_guilds()]
+        roll_points_event.start(guilds)
 
     @commands.Cog.listener()
     async def on_ready(self):

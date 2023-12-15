@@ -1,6 +1,6 @@
 import datetime
 import random
-
+from typing import List
 import discord
 from discord.ext import tasks
 from db.current import get_kicks_db, get_events_db, get_rolls_db
@@ -29,5 +29,9 @@ async def level_daily_event(channels):
 
 
 @tasks.loop(time=datetime.time(minute=5, tzinfo=utc))
-async def roll_points_add():
-    get_rolls_db().get_guilds()
+async def roll_points_event(guilds: List[discord.Guild]):
+    for guild in guilds:
+        for member in guild.members:
+            if not member.bot:
+                pass
+                #get_rolls_db().points_add(guild.id, member.id, 100)
