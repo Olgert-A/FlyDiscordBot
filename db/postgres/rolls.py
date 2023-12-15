@@ -65,7 +65,7 @@ class RollsDb(AbstractRollsDB):
             SELECT id, %s, %s FROM guilds 
             WHERE guild_id = %s
             ON CONFLICT(reg_id, user_id) 
-            DO UPDATE SET points = stats.points + excluded.points;""", (user_id, points, guild_id))
+            DO UPDATE SET points = rolls.points + excluded.points;""", (user_id, points, guild_id))
 
     def points_get(self, guild_id, user_id):
         with psycopg.connect(self.DATABASE_URL) as c:
