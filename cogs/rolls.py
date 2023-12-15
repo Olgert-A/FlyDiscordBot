@@ -56,13 +56,13 @@ class RollsCog(commands.Cog):
         win_sign = random.choice([1, -1])
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек.")
+        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
 
     @app_commands.command(name='сердечки',
                           description='Узнай, сколько у тебя сердечек')
     async def points(self, ctx: discord.Interaction):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-        await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек.")
+        await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету сердечек: {user_pts}.")
 
     @roll.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
