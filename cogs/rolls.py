@@ -64,6 +64,11 @@ class RollsCog(commands.Cog):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
         await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек.")
 
+    @roll.error
+    async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await interaction.response.send_message(str(error), ephemeral=True)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(RollsCog(bot))
