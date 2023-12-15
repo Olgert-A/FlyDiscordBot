@@ -33,7 +33,7 @@ class RollsCog(commands.Cog):
                           description='Административная команда для отключения сервера от рулетки сердечек')
     @check_bot_author_permission()
     async def rolls_reg_stop(self, ctx: discord.Interaction):
-        get_levels_db().guild_reg_stop(ctx.guild.id)
+        get_rolls_db().guild_reg_stop(ctx.guild.id)
 
         await ctx.response.send_message(f'Канал отписан от программы **Сердечки**!', ephemeral=True)
 
