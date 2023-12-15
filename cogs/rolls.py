@@ -60,7 +60,6 @@ class RollsCog(commands.Cog):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
         await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек."
         
-          
 
 
 async def setup(bot: commands.Bot):
