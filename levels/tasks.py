@@ -33,5 +33,4 @@ async def roll_points_event(guilds: List[discord.Guild]):
     for guild in guilds:
         for member in guild.members:
             if not member.bot:
-                pass
-                #get_rolls_db().points_add(guild.id, member.id, 100)
+                get_rolls_db().points_add(guild.id, member.id, 100)
