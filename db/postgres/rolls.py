@@ -9,12 +9,10 @@ logging.basicConfig(level=logging.INFO)
 class RollsDb(AbstractRollsDB):
     def __init__(self, database_url):
         super().__init__(database_url)
-        self._drop_tables()
         self._guilds_create()
         self._rolls_create()
 
     def _drop_tables(self):
-        logging.debug('dropped')
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""DROP TABLE IF EXISTS guilds, rolls;""")
 
@@ -64,7 +62,7 @@ class RollsDb(AbstractRollsDB):
     def points_add(self, guild_id, user_id, points):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""INSERT INTO rolls(reg_id, user_id, points)
-            SELECT id, %s, %s FROM channels 
+            SELECT id, %s, %s FROM guilds 
             WHERE guild_id = %s
             ON CONFLICT(reg_id, user_id) 
             DO UPDATE SET points = stats.points + excluded.points;""", (user_id, points, guild_id))
