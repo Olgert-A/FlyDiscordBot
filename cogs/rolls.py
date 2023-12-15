@@ -19,6 +19,24 @@ class RollsCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @app_commands.command(name='лудоманить',
+                          description='Административная команда для подключения сервера к рулетке сердечек')
+    @check_bot_author_permission()
+    async def rolls_reg(self, ctx: discord.Interaction):
+        get_rolls_db().guild_reg(ctx.guild.id)
+        for m in ctx.members:
+            get_rolls_db().points_add(ctx.guild.id, m.id, 0)
+
+        await ctx.response.send_message(f'Канал зарегистрирован в программе **Сердечки**!', ephemeral=True)
+
+    @app_commands.command(name='расстаться',
+                          description='Административная команда для отключения сервера от рулетки сердечек')
+    @check_bot_author_permission()
+    async def rolls_reg_stop(self, ctx: discord.Interaction):
+        get_levels_db().guild_reg_stop(ctx.guild.id)
+
+        await ctx.response.send_message(f'Канал отписан от программы **Сердечки**!', ephemeral=True)
+
     @app_commands.command(name='крутить')
     @app_commands.rename(roll_pts='сердечки')
     @app_commands.describe(who='Сколько крутим')
