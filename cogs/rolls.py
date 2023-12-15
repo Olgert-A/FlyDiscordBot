@@ -25,7 +25,7 @@ class RollsCog(commands.Cog):
     @check_bot_author_permission()
     async def rolls_reg(self, ctx: discord.Interaction):
         get_rolls_db().guild_reg(ctx.guild.id)
-        for m in ctx.members:
+        for m in ctx.guild.members:
             get_rolls_db().points_add(ctx.guild.id, m.id, 0)
 
         await ctx.response.send_message(f'Канал зарегистрирован в программе **Сердечки**!', ephemeral=True)
