@@ -1,4 +1,5 @@
 import discord
+import random
 from discord import app_commands
 from discord.ext import commands
 from db.current import get_rolls_db
@@ -53,13 +54,12 @@ class RollsCog(commands.Cog):
         win_sign = random.choice([1, -1])
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек."
-
+        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек.")
+        
     @app_commands.command(name='сердечки')
     async def points(self, ctx: discord.Interaction):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-        await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек."
-        
+        await ctx.response.send_message(f"{name(ctx.user)}, у тебя на счету {user_pts} сердечек.")
 
 
 async def setup(bot: commands.Bot):
