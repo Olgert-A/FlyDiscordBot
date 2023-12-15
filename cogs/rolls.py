@@ -55,7 +55,7 @@ class RollsCog(commands.Cog):
         win_sign = random.choice([1, -1])
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек.")
+        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету {user_pts + pts_to_add} сердечек.")
 
     @app_commands.command(name='сердечки',
                           description='Узнай, сколько у тебя сердечек')
