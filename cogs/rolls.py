@@ -42,6 +42,7 @@ class RollsCog(commands.Cog):
                           description='Рулетка сердечек')
     @app_commands.rename(roll_pts='сердечки')
     @app_commands.describe(roll_pts='Сколько крутим')
+    @app_commands.checks.cooldown(1, 60)
     async def roll(self, ctx: discord.Interaction, roll_pts: int):
         if roll_pts < 0:
             await ctx.response.send_message(f"Низя крутить, когда твои сердечки кончились")
