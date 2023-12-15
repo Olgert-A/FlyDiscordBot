@@ -41,12 +41,12 @@ class RollsCog(commands.Cog):
     @app_commands.rename(roll_pts='сердечки')
     @app_commands.describe(who='Сколько крутим')
     async def roll(self, ctx: discord.Interaction, roll_pts: int):
-        if(roll_pts < 0)
+        if roll_pts < 0:
             await ctx.response.send_message(f"Низя крутить, когда твои сердечки кончились")
             return
         
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-        if(roll_pts > user_pts)
+        if roll_pts > user_pts:
             await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
             return
 
