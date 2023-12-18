@@ -37,7 +37,7 @@ class RollsDb(AbstractRollsDB):
 
     def _duels_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DELETE TABLE duels;""")
+            c.execute("""DROP TABLE duels;""")
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
                 message_id BIGINT UNIQUE,
