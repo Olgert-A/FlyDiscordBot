@@ -96,7 +96,10 @@ class RollsCog(commands.Cog):
             await ctx.response.send_message(f"Ты уже ждёшь дуэли со своей целью")
             return
 
-        message = await ctx.response.send_message(f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
+        await ctx.response.send_message(
+            f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
+        message = await ctx.original_response()
+        get_rolls_db().duels_contract_add()
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
 
