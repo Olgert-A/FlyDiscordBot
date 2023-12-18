@@ -11,6 +11,7 @@ class RollsDb(AbstractRollsDB):
         super().__init__(database_url)
         self._guilds_create()
         self._rolls_create()
+        self._duels_create()
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -33,6 +34,56 @@ class RollsDb(AbstractRollsDB):
                 FOREIGN KEY (reg_id) REFERENCES guilds (id) ON DELETE CASCADE,
                 UNIQUE(reg_id, user_id)
                 );""")
+
+    def _duels_create(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS duels (
+                id SERIAL PRIMARY KEY, 
+                message_id SERIAL UNIQUE,
+                timestamp TIMESTAMP NOT NULL,
+                user_id BIGINT NOT NULL,
+                target_id BIGINT NOT NULL,
+                points INTEGER
+                );""")
+
+    def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
+                   VALUES (%s, %s, %s, %s, %s) 
+                   ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
+
+    def duels_contract_get(self, message_id):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            #c.row_factory = lambda cursor: lambda row: row[0]
+            try:
+                res = c.execute("""SELECT timestamp, user_id, target_id, points
+                                FROM duels WHERE message_id = %s;""", (message_id,)).fetchone()
+            except psycopg.Error as e:
+                logging.error(f"Get duels contract raise exception: {e}")
+                return
+            #finally:
+                #c.row_factory = None
+            print(res)
+            return res
+
+    def duels_contract_find(self, user_id, target_id):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            #c.row_factory = lambda cursor: lambda row: row[0]
+            try:
+                res = c.execute("""SELECT message_id, timestamp, points FROM duels 
+                                WHERE user_id = %s
+                                AND target_id = %s;""", (user_id, target_id)).fetchone()
+            except psycopg.Error as e:
+                logging.error(f"Find duels contract raise exception: {e}")
+                return
+            #finally:
+                #c.row_factory = None
+            print(res)
+            return res
+
+    def duels_contract_clear(self, message_id):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("DELETE FROM duels WHERE message_id = %s", (message_id,))
 
     def guild_reg(self, guild_id):
         with psycopg.connect(self.DATABASE_URL) as c:
