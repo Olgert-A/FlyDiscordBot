@@ -67,6 +67,11 @@ class RollsDb(AbstractRollsDB):
             print(res)
             return res
 
+    def duel_get(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+            return dict(res)
+
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
             #c.row_factory = lambda cursor: lambda row: row[0]
