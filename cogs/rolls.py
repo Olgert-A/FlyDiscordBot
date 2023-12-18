@@ -109,10 +109,11 @@ class RollsCog(commands.Cog):
         message = reaction.message
         logging.info(f'message: {message.id}')
         contract = get_rolls_db().duels_contract_get(message_id=message.id)
+        logging.info(f'contract: {contract}')
+        
         if not contract:
             return
 
-        logging.info(f'contract: {contract}')
         timestamp, user_id, target_id, points = contract
 
         if target_id != user.id:
