@@ -71,65 +71,66 @@ class RollsCog(commands.Cog):
         user_points = get_rolls_db().points_get(guild_id, user_id)
         return user_points >= points
 
-    # @app_commands.command(name='дуэль',
-    #                       description='Укради чужие сердечки')
-    # async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
-    #     user = ctx.user
-    #
-    #     user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
-    #     target_points_check = self.check_points_exist(ctx.guild.id, target.id, points)
-    #
-    #     if points < 0:
-    #         await ctx.response.send_message(f"Низя крутить меньше 0 сердечек")
-    #         return
-    #
-    #     if not user_points_check:
-    #         await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
-    #         return
-    #
-    #     if not target_points_check:
-    #         await ctx.response.send_message(f"У твоей цели нету столько сердечек, дружок")
-    #         return
-    #
-    #     contract = get_rolls_db().duels_contract_find(user.id, target.id)
-    #     if contract:
-    #         await ctx.response.send_message(f"Ты уже ждёшь дуэли со своей целью")
-    #         return
-    #
-    #     await ctx.response.send_message(
-    #         f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
-    #     message = await ctx.original_response()
-    #     await message.add_reaction('\N{THUMBS UP SIGN}')
-    #     await message.add_reaction('\N{THUMBS DOWN SIGN}')
-    #     get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
-    #
-    # @commands.Cog.listener()
-    # async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-    #     message = reaction.message
-    #     logging.info(f'message: {message.id}')
-    #     contract = get_rolls_db().duels_contract_get(message_id=message.id)
-    #     if not contract:
-    #         return
-    #
-    #     logging.info(f'contract: {contract}')
-    #     timestamp, user_id, target_id, points = contract
-    #
-    #     if target_id != user.id:
-    #         return
-    #
-    #     user_points_check = self.check_points_exist(message.guild.id, user_id, points)
-    #     target_points_check = self.check_points_exist(message.guild.id, target_id, points)
-    #
-    #     if not user_points_check or not target_points_check:
-    #         await message.channel.send(f'<@{user_id}>, <@{target_id}>, у кого-то из вас нету нужного количества сердечек, дуэль отменена!')
-    #         get_rolls_db().duels_contract_clear(message.id)
-    #
-    #     win_sign = random.choice([1, -1])
-    #     pts_to_add = win_sign * points
-    #     get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
-    #     get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
-    #     get_rolls_db().duels_contract_clear(message.id)
-    #     await message.channel.send(f"{name(user_id)} вызывает на дуэль {name(target_id)} и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
+    @app_commands.command(name='дуэль',
+                          description='Укради чужие сердечки')
+    async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
+        user = ctx.user
+
+        user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
+        target_points_check = self.check_points_exist(ctx.guild.id, target.id, points)
+
+        if points < 0:
+            await ctx.response.send_message(f"Низя крутить меньше 0 сердечек")
+            return
+
+        if not user_points_check:
+            await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
+            return
+
+        if not target_points_check:
+            await ctx.response.send_message(f"У твоей цели нету столько сердечек, дружок")
+            return
+
+        contract = get_rolls_db().duels_contract_find(user.id, target.id)
+        if contract:
+            await ctx.response.send_message(f"Ты уже ждёшь дуэли со своей целью")
+            return
+
+        await ctx.response.send_message(
+            f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
+        message = await ctx.original_response()
+        await message.add_reaction('\N{THUMBS UP SIGN}')
+        await message.add_reaction('\N{THUMBS DOWN SIGN}')
+        logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
+        get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
+        message = reaction.message
+        logging.info(f'message: {message.id}')
+        contract = get_rolls_db().duels_contract_get(message_id=message.id)
+        if not contract:
+            return
+
+        logging.info(f'contract: {contract}')
+        timestamp, user_id, target_id, points = contract
+
+        if target_id != user.id:
+            return
+
+        user_points_check = self.check_points_exist(message.guild.id, user_id, points)
+        target_points_check = self.check_points_exist(message.guild.id, target_id, points)
+
+        if not user_points_check or not target_points_check:
+            await message.channel.send(f'<@{user_id}>, <@{target_id}>, у кого-то из вас нету нужного количества сердечек, дуэль отменена!')
+            get_rolls_db().duels_contract_clear(message.id)
+
+        win_sign = random.choice([1, -1])
+        pts_to_add = win_sign * points
+        get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
+        get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
+        get_rolls_db().duels_contract_clear(message.id)
+        await message.channel.send(f"{name(user_id)} вызывает на дуэль {name(target_id)} и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
 
     @roll.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
