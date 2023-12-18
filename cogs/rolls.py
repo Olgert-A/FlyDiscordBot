@@ -1,5 +1,5 @@
 import logging
-
+import datetime
 import discord
 import random
 from discord import app_commands
@@ -101,7 +101,7 @@ class RollsCog(commands.Cog):
         message = await ctx.original_response()
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
-        get_rolls_db().duels_contract_add(message.id, 0, user.id, target.id, points)
+        get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -110,7 +110,7 @@ class RollsCog(commands.Cog):
         contract = get_rolls_db().duels_contract_get(message_id=message.id)
         if not contract:
             return
-        
+
         logging.info(f'contract: {contract}')
         timestamp, user_id, target_id, points = contract
 
