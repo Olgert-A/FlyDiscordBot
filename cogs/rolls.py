@@ -99,9 +99,9 @@ class RollsCog(commands.Cog):
         await ctx.response.send_message(
             f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
         message = await ctx.original_response()
-        get_rolls_db().duels_contract_add()
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
+        get_rolls_db().duels_contract_add(message.id, 0, user.id, target.id, points)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
