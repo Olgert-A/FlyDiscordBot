@@ -71,6 +71,11 @@ class RollsCog(commands.Cog):
         user_points = get_rolls_db().points_get(guild_id, user_id)
         return user_points >= points
 
+    @app_commands.command(name='test1')
+    async def test(self, ctx: discord.Interaction):
+        pts = get_rolls_db().get_from_test()
+        logging.info(f'test_table: {pts}')
+
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
@@ -78,7 +83,7 @@ class RollsCog(commands.Cog):
         pts = get_rolls_db().get_from_test()
         logging.info(f'test_table: {pts}')
         return
-        
+
         user = ctx.user
 
         user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
@@ -112,6 +117,10 @@ class RollsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
+        pts = get_rolls_db().get_from_test()
+        logging.info(f'test_table: {pts}')
+        return
+
         message = reaction.message
         logging.info(f'message: {message.id}')
         get_rolls_db().duel_get()
