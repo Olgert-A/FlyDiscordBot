@@ -41,18 +41,17 @@ class RollsDb(AbstractRollsDB):
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
                 message_id BIGINT UNIQUE,
-                timestamp TIMESTAMP NOT NULL,
                 user_id BIGINT NOT NULL,
                 target_id BIGINT NOT NULL,
                 points INTEGER
                 );""")
-
+#timestamp TIMESTAMP NOT NULL,
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
         with psycopg.connect(self.DATABASE_URL) as con:
             with con.cursor() as c:
-                c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
-                       VALUES (%s, %s, %s, %s, %s) 
-                       ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
+                c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
+                       VALUES (%s, %s, %s, %s) 
+                       ON CONFLICT(message_id) DO NOTHING;""", (message_id, user_id, target_id, points))
                 res = c.execute("""SELECT * FROM duels;""").fetchall()
                 logging.info('add contract')
                 logging.info(f'select: {res}')
@@ -61,7 +60,7 @@ class RollsDb(AbstractRollsDB):
         with psycopg.connect(self.DATABASE_URL) as c:
             #c.row_factory = lambda cursor: lambda row: row[0]
             try:
-                res = c.execute("""SELECT timestamp, user_id, target_id, points
+                res = c.execute("""SELECT user_id, target_id, points
                                 FROM duels WHERE message_id = %s;""", (message_id,)).fetchone()
             except psycopg.Error as e:
                 logging.error(f"Get duels contract raise exception: {e}")
