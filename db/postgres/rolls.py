@@ -48,14 +48,14 @@ class RollsDb(AbstractRollsDB):
                 );""")
 
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            cursor = c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
-                   VALUES (%s, %s, %s, %s, %s) 
-                   ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
-            res = c.execute("""SELECT * FROM duels;""").fetchall()
-            logging.info('add contract')
-            logging.info(f'cursor: {cursor}')
-            logging.info(f'select: {res}')
+        with psycopg.connect(self.DATABASE_URL) as con:
+            with con.cursor() as c:
+                c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
+                       VALUES (%s, %s, %s, %s, %s) 
+                       ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
+                res = c.execute("""SELECT * FROM duels;""").fetchall()
+                logging.info('add contract')
+                logging.info(f'select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -72,11 +72,12 @@ class RollsDb(AbstractRollsDB):
             return res
 
     def duel_get(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            res = c.execute("""SELECT * FROM duels;""").fetchall()
-            logging.info('get all duels')
-            logging.info(f'select: {res}')
-            return dict(res)
+        with psycopg.connect(self.DATABASE_URL) as con:
+            with con.cursor() as c:
+                res = c.execute("""SELECT * FROM duels;""").fetchall()
+                logging.info('get all duels')
+                logging.info(f'select: {res}')
+                return dict(res)
 
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
