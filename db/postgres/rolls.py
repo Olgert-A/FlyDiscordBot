@@ -53,9 +53,9 @@ class RollsDb(AbstractRollsDB):
                    VALUES (%s, %s, %s, %s, %s) 
                    ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
             res = c.execute("""SELECT * FROM duels;""").fetchall()
-            logging.debug('add contract')
-            logging.debug(f'cursor: {cursor}')
-            logging.debug(f'select: {res}')
+            logging.info('add contract')
+            logging.info(f'cursor: {cursor}')
+            logging.info(f'select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
