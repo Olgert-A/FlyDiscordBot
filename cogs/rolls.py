@@ -73,6 +73,7 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='test1')
     async def test(self, ctx: discord.Interaction):
+        get_rolls_db().duels_contract_add(1, 1, 2, 3, 4)
         get_rolls_db().duel_get()
 
     @app_commands.command(name='дуэль',
