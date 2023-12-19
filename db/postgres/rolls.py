@@ -52,6 +52,7 @@ class RollsDb(AbstractRollsDB):
                 c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
                        VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
                 res = c.execute("""SELECT * FROM duels;""").fetchall()
+                con.commit()
                 logging.info('add contract')
                 logging.info(f'select: {res}')
 
