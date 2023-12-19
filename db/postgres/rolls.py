@@ -13,6 +13,7 @@ class RollsDb(AbstractRollsDB):
         self._rolls_create()
         self._duels_create()
         self._test_table()
+        self._pvp_table()
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -42,6 +43,28 @@ class RollsDb(AbstractRollsDB):
                             id SERIAL PRIMARY KEY, 
                             points BIGINT NOT NULL
                             );""")
+
+    def _pvp_table(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS pvp_table (
+                        id SERIAL PRIMARY KEY, 
+                        user_id BIGINT NOT NULL,
+                        target_id BIGINT NOT NULL,
+                        message_id BIGINT NOT NULL,
+                        points BIGINT NOT NULL,
+                        contract_time TIMESTAMP NOT NULL
+                        );""")
+
+    def add_pvp(self, user_id: int, target_id: int, points: int, message_id: int, contract_time):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO pvp_table(user_id, target_id, message_id, points, contract_time)
+                         VALUES (%s, %s, %s, %s, %s);""",
+                      (user_id, target_id, message_id, points, contract_time)
+                      )
+
+    def get_all_pvp(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("SELECT * FROM pvp_table;")
 
     def add_to_test(self, points: int):
         with psycopg.connect(self.DATABASE_URL) as c:

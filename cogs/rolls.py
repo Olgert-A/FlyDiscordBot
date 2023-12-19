@@ -111,13 +111,16 @@ class RollsCog(commands.Cog):
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
         logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
-        get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
+        get_rolls_db().add_pvp(user.id, target.id, points, message.id, datetime.datetime.now())
+        pts = get_rolls_db().get_all_pvp()
+        logging.info(f'pvp_table: {pts}')
+        #get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
 
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        pts = get_rolls_db().get_from_test()
-        logging.info(f'test_table: {pts}')
+        pts = get_rolls_db().get_all_pvp()
+        logging.info(f'pvp_table: {pts}')
         return
 
         message = reaction.message
