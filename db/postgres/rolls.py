@@ -48,13 +48,17 @@ class RollsDb(AbstractRollsDB):
 #timestamp TIMESTAMP NOT NULL,
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
-                                   VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
+            try:
+                c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
+                                       VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
+            except psycopg.Error as e:
+                logging.error(f"INSERT exeption: {e}")
+                return
+
             res = c.execute("""SELECT * FROM duels;""").fetchall()
 
             logging.info('add contract')
             logging.info(f'select: {res}')
-
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
