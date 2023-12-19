@@ -49,7 +49,8 @@ class RollsDb(AbstractRollsDB):
 
     def get_from_test(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            res = c.execute("SELECT * FROM test_table;").fetchall()
+            res = c.execute("""SELECT table_name FROM information_schema.tables
+                            WHERE table_schema NOT IN ('information_schema','pg_catalog');""").fetchall()
         return res
 
     def _duels_create(self):
