@@ -73,8 +73,7 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='test1')
     async def test(self, ctx: discord.Interaction):
-        pts = get_rolls_db().get_from_test()
-        logging.info(f'test_table: {pts}')
+        get_rolls_db().duel_get()
 
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
