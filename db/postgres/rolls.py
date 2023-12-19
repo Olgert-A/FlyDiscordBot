@@ -50,8 +50,7 @@ class RollsDb(AbstractRollsDB):
         with psycopg.connect(self.DATABASE_URL) as con:
             with con.cursor() as c:
                 c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
-                       VALUES (%s, %s, %s, %s) 
-                       ON CONFLICT(message_id) DO NOTHING;""", (message_id, user_id, target_id, points))
+                       VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
                 res = c.execute("""SELECT * FROM duels;""").fetchall()
                 logging.info('add contract')
                 logging.info(f'select: {res}')
