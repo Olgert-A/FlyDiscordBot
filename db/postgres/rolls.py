@@ -40,7 +40,7 @@ class RollsDb(AbstractRollsDB):
             c.execute("""DROP TABLE duels;""")
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
-                message_id BIGINT UNIQUE,
+                message_id BIGINT NOT NULL,
                 user_id BIGINT NOT NULL,
                 target_id BIGINT NOT NULL,
                 points INTEGER
