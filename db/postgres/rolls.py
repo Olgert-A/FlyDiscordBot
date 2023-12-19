@@ -47,7 +47,12 @@ class RollsDb(AbstractRollsDB):
     def _pvp_table(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""DROP TABLE pvp_table;
-                        CREATE TABLE IF NOT EXISTS pvp_table (id SERIAL PRIMARY KEY, user BIGINT NOT NULL, target INTEGER NOT NULL, message INTEGER NOT NULL, points INTEGER NOT NULL, contract TIMESTAMP NOT NULL);""")
+                        CREATE TABLE IF NOT EXISTS pvp_table (
+                        id SERIAL PRIMARY KEY,
+                        firstid BIGINT NOT NULL,
+                        targetid INTEGER NOT NULL,
+                        msgid INTEGER NOT NULL,
+                        points INTEGER);""")
 
     def add_pvp(self, user_id: int, target_id: int, points: int, message_id: int, contract_time):
         with psycopg.connect(self.DATABASE_URL) as c:
