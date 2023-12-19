@@ -49,9 +49,13 @@ class RollsDb(AbstractRollsDB):
 
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
+            cursor = c.execute("""INSERT INTO duels(message_id, timestamp, user_id, target_id, points) 
                    VALUES (%s, %s, %s, %s, %s) 
                    ON CONFLICT(message_id) DO NOTHING;""", (message_id, timestamp, user_id, target_id, points))
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+            logging.debug('add contract')
+            logging.debug(f'cursor: {cursor}')
+            logging.debug(f'select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
