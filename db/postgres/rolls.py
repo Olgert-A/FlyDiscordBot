@@ -74,6 +74,8 @@ class RollsDb(AbstractRollsDB):
     def duel_get(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
+            logging.info('get all duels')
+            logging.info(f'select: {res}')
             return dict(res)
 
     def duels_contract_find(self, user_id, target_id):

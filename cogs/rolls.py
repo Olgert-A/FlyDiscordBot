@@ -109,6 +109,7 @@ class RollsCog(commands.Cog):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         message = reaction.message
         logging.info(f'message: {message.id}')
+        get_rolls_db().duel_get()
         contract = get_rolls_db().duels_contract_get(message_id=message.id)
         logging.info(f'contract: {contract}')
 
