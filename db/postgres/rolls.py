@@ -12,6 +12,7 @@ class RollsDb(AbstractRollsDB):
         self._guilds_create()
         self._rolls_create()
         self._duels_create()
+        self._test_table()
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -34,6 +35,22 @@ class RollsDb(AbstractRollsDB):
                 FOREIGN KEY (reg_id) REFERENCES guilds (id) ON DELETE CASCADE,
                 UNIQUE(reg_id, user_id)
                 );""")
+
+    def _test_table(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS test_table (
+                            id SERIAL PRIMARY KEY, 
+                            points BIGINT NOT NULL
+                            );""")
+
+    def add_to_test(self, points: int):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO test_table(points) VALUES (%s);""", (points, ))
+
+    def get_from_test(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("SELECT * FROM test_table;").fetchall()
+        return res
 
     def _duels_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:

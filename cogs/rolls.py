@@ -74,6 +74,11 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
+        get_rolls_db().add_to_test(5)
+        pts = get_rolls_db().get_from_test()
+        logging.info(f'test_table: {pts}')
+        return
+        
         user = ctx.user
 
         user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
