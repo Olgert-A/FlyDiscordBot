@@ -12,8 +12,6 @@ class RollsDb(AbstractRollsDB):
         self._guilds_create()
         self._rolls_create()
         self._duels_create()
-        self._test_table()
-        self._pvp_table()
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -37,64 +35,26 @@ class RollsDb(AbstractRollsDB):
                 UNIQUE(reg_id, user_id)
                 );""")
 
-    def _test_table(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""CREATE TABLE IF NOT EXISTS test_table (
-                            id SERIAL PRIMARY KEY, 
-                            points BIGINT NOT NULL
-                            );""")
-
-    def _pvp_table(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE pvp_table;
-                        CREATE TABLE IF NOT EXISTS pvp_table (
-                        id SERIAL PRIMARY KEY,
-                        firstid BIGINT NOT NULL,
-                        targetid INTEGER NOT NULL,
-                        msgid INTEGER NOT NULL,
-                        points INTEGER);""")
-
-    def add_pvp(self, user_id: int, target_id: int, points: int, message_id: int, contract_time):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO pvp_table(firstid, targetid, msgid, points)
-                         VALUES (%s, %s, %s, %s);""",
-                      (user_id, target_id, message_id, points)
-                      )
-
-    def get_all_pvp(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("SELECT * FROM pvp_table;")
-
-    def add_to_test(self, points: int):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO test_table(points) VALUES (%s);""", (points, ))
-
-    def get_from_test(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            res = c.execute("""SELECT table_name FROM information_schema.tables
-                            WHERE table_schema NOT IN ('information_schema','pg_catalog');""").fetchall()
-        return res
-
     def _duels_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""DROP TABLE duels;""")
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
-                message_id BIGINT NOT NULL,
-                user_id BIGINT NOT NULL,
-                target_id BIGINT NOT NULL,
+                message_id BIGINT,
+                user_id BIGINT,
+                target_id BIGINT,
                 points INTEGER
                 );""")
 #timestamp TIMESTAMP NOT NULL,
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
-        with psycopg.connect(self.DATABASE_URL) as con:
-            with con.cursor() as c:
-                c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
-                       VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
-                res = c.execute("""SELECT * FROM duels;""").fetchall()
-                con.commit()
-                logging.info('add contract')
-                logging.info(f'select: {res}')
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
+                                   VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+
+            logging.info('add contract')
+            logging.info(f'select: {res}')
+
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:

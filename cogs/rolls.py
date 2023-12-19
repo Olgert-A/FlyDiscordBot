@@ -79,10 +79,6 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
-        get_rolls_db().add_to_test(points)
-        pts = get_rolls_db().get_from_test()
-        logging.info(f'test_table: {pts}')
-
         user = ctx.user
 
         user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
@@ -111,18 +107,11 @@ class RollsCog(commands.Cog):
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
         logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
-        get_rolls_db().add_pvp(1, 2, 3, 4, datetime.datetime.now())
-        pts = get_rolls_db().get_all_pvp()
-        logging.info(f'pvp_table: {pts}')
-        #get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
+        get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
 
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        pts = get_rolls_db().get_all_pvp()
-        logging.info(f'pvp_table: {pts}')
-        return
-
         message = reaction.message
         logging.info(f'message: {message.id}')
         get_rolls_db().duel_get()
