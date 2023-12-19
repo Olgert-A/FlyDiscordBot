@@ -56,9 +56,9 @@ class RollsDb(AbstractRollsDB):
 
     def add_pvp(self, user_id: int, target_id: int, points: int, message_id: int, contract_time):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO pvp_table(user, target, message, points, contract)
-                         VALUES (%s, %s, %s, %s, %s);""",
-                      (user_id, target_id, message_id, points, contract_time)
+            c.execute("""INSERT INTO pvp_table(firstid, targetid, msgid, points)
+                         VALUES (%s, %s, %s, %s);""",
+                      (user_id, target_id, message_id, points)
                       )
 
     def get_all_pvp(self):
