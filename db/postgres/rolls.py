@@ -45,32 +45,50 @@ class RollsDb(AbstractRollsDB):
                 target_id BIGINT,
                 points INTEGER
                 );""")
-#timestamp TIMESTAMP NOT NULL,
+
+    # timestamp TIMESTAMP NOT NULL,
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
-            try:
-                c.execute("""INSERT INTO duels(message_id, user_id, target_id, points) 
-                                       VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
-            except psycopg.Error as e:
-                logging.error(f"INSERT exeption: {e}")
-                return
+        try:
+            logging.info('add try')
+            conn = psycopg.connect(self.DATABASE_URL)
+            cur = conn.cursor()
+            cur.execute("""INSERT INTO duels(message_id, user_id, target_id, points) VALUES (%s, %s, %s, %s);""",
+                        (message_id, user_id, target_id, points))
 
-            res = c.execute("""SELECT * FROM duels;""").fetchall()
+        except psycopg.Error as e:
+            logging.error(f"Connection exeption: {e}")
+            return
+        else:
+            logging.info('commit')
+            conn.commit()
+        finally:
+            logging.info('close')
+            conn.close()
 
-            logging.info('add contract')
-            logging.info(f'select: {res}')
+        # with psycopg.connect(self.DATABASE_URL) as c:
+        #     try:
+        #         c.execute("""INSERT INTO duels(message_id, user_id, target_id, points)
+        #                                VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
+        #     except psycopg.Error as e:
+        #         logging.error(f"INSERT exeption: {e}")
+        #         return
+        #
+        #     res = c.execute("""SELECT * FROM duels;""").fetchall()
+        #
+        #     logging.info('add contract')
+        #     logging.info(f'select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
-            #c.row_factory = lambda cursor: lambda row: row[0]
+            # c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute("""SELECT user_id, target_id, points
                                 FROM duels WHERE message_id = %s;""", (message_id,)).fetchone()
             except psycopg.Error as e:
                 logging.error(f"Get duels contract raise exception: {e}")
                 return
-            #finally:
-                #c.row_factory = None
+            # finally:
+            # c.row_factory = None
             print(res)
             return res
 
@@ -84,7 +102,7 @@ class RollsDb(AbstractRollsDB):
 
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
-            #c.row_factory = lambda cursor: lambda row: row[0]
+            # c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute("""SELECT message_id, timestamp, points FROM duels 
                                 WHERE user_id = %s
@@ -92,8 +110,8 @@ class RollsDb(AbstractRollsDB):
             except psycopg.Error as e:
                 logging.error(f"Find duels contract raise exception: {e}")
                 return
-            #finally:
-                #c.row_factory = None
+            # finally:
+            # c.row_factory = None
             print(res)
             return res
 
@@ -145,7 +163,7 @@ class RollsDb(AbstractRollsDB):
                     WHERE user_id = %s
                     AND reg_id = (SELECT id FROM guilds WHERE guild_id = %s)""",
                     (user_id, guild_id)
-                                ).fetchone()
+                ).fetchone()
             except psycopg.Error as e:
                 logging.error(f"Get points raise exception: {e}")
                 return
