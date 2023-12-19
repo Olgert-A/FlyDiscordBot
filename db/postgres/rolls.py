@@ -50,7 +50,7 @@ class RollsDb(AbstractRollsDB):
                         CREATE TABLE IF NOT EXISTS pvp_table (
                         id SERIAL PRIMARY KEY, 
                         user_id BIGINT NOT NULL,
-                        target_id BIGINT NOT NULL,
+                        target_id INTEGER NOT NULL,
                         message_id INTEGER NOT NULL,
                         points INTEGER NOT NULL,
                         contract_time TIMESTAMP NOT NULL
