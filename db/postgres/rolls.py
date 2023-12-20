@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 import psycopg
@@ -57,7 +58,7 @@ class RollsDb(AbstractRollsDB):
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('add contract')
             logging.info(f'in-transaction select: {res}')
-
+        await asyncio.sleep(5)
         with psycopg.connect(self.DATABASE_URL) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info(f'second transaction select: {res}')
