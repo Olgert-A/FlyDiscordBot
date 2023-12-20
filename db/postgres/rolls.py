@@ -41,42 +41,27 @@ class RollsDb(AbstractRollsDB):
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
                 message_id BIGINT,
-                user_id BIGINT,
-                target_id BIGINT,
-                points INTEGER
+                timestamp TIMESTAMP
                 );""")
 
     # timestamp TIMESTAMP NOT NULL,
+    # user_id
+    # BIGINT,
+    # target_id
+    # BIGINT,
+    # points
+    # INTEGER
+
     def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
-        try:
-            logging.info('add try')
-            conn = psycopg.connect(self.DATABASE_URL)
-            cur = conn.cursor()
-            cur.execute("""INSERT INTO duels(message_id, user_id, target_id, points) VALUES (%s, %s, %s, %s);""",
-                        (message_id, user_id, target_id, points))
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO duels(message_id, timestamp) VALUES (%s, %s);""", (message_id, timestamp))
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+            logging.info('add contract')
+            logging.info(f'in-transaction select: {res}')
 
-        except psycopg.Error as e:
-            logging.error(f"Connection exeption: {e}")
-            return
-        else:
-            logging.info('commit')
-            conn.commit()
-        finally:
-            logging.info('close')
-            conn.close()
-
-        # with psycopg.connect(self.DATABASE_URL) as c:
-        #     try:
-        #         c.execute("""INSERT INTO duels(message_id, user_id, target_id, points)
-        #                                VALUES (%s, %s, %s, %s);""", (message_id, user_id, target_id, points))
-        #     except psycopg.Error as e:
-        #         logging.error(f"INSERT exeption: {e}")
-        #         return
-        #
-        #     res = c.execute("""SELECT * FROM duels;""").fetchall()
-        #
-        #     logging.info('add contract')
-        #     logging.info(f'select: {res}')
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+            logging.info(f'second transaction select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -93,12 +78,11 @@ class RollsDb(AbstractRollsDB):
             return res
 
     def duel_get(self):
-        with psycopg.connect(self.DATABASE_URL) as con:
-            with con.cursor() as c:
-                res = c.execute("""SELECT * FROM duels;""").fetchall()
-                logging.info('get all duels')
-                logging.info(f'select: {res}')
-                return dict(res)
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("""SELECT * FROM duels;""").fetchall()
+            logging.info('get all duels')
+            logging.info(f'select: {res}')
+            return dict(res)
 
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
