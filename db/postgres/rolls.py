@@ -52,7 +52,7 @@ class RollsDb(AbstractRollsDB):
     # points
     # INTEGER
 
-    def duels_contract_add(self, message_id, timestamp, user_id, target_id, points):
+    def duels_contract_add(self, message_id, timestamp):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""INSERT INTO duels(message_id, timestamp) VALUES (%s, %s);""", (message_id, timestamp))
             res = c.execute("""SELECT * FROM duels;""").fetchall()
