@@ -40,8 +40,7 @@ class RollsDb(AbstractRollsDB):
             c.execute("""DROP TABLE duels;""")
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
-                message_id BIGINT,
-                timestamp TIMESTAMP
+                message_id BIGINT
                 );""")
 
     # timestamp TIMESTAMP NOT NULL,
@@ -54,7 +53,7 @@ class RollsDb(AbstractRollsDB):
 
     def duels_contract_add(self, message_id, timestamp):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO duels(message_id, timestamp) VALUES (%s, %s);""", (message_id, timestamp))
+            c.execute("""INSERT INTO duels(message_id) VALUES (%s);""", (message_id, ))
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('add contract')
             logging.info(f'in-transaction select: {res}')
@@ -81,7 +80,7 @@ class RollsDb(AbstractRollsDB):
         with psycopg.connect(self.DATABASE_URL) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('get all duels')
-            logging.info(f'select: {res}')
+            logging.info(f'select: {res}' )
             return dict(res)
 
     def duels_contract_find(self, user_id, target_id):
