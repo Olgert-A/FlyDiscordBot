@@ -15,18 +15,18 @@ class RollsDb(AbstractRollsDB):
         self._duels_create()
 
     def _drop_tables(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""DROP TABLE IF EXISTS guilds, rolls;""")
 
     def _guilds_create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS guilds (
                 id SERIAL PRIMARY KEY, 
                 guild_id BIGINT NOT NULL UNIQUE
                 );""")
 
     def _rolls_create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS rolls (
                 id SERIAL PRIMARY KEY, 
                 reg_id SERIAL,
@@ -37,7 +37,7 @@ class RollsDb(AbstractRollsDB):
                 );""")
 
     def _duels_create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""DROP TABLE duels;""")
             c.execute("""CREATE TABLE IF NOT EXISTS duels (
                 id SERIAL PRIMARY KEY, 
@@ -53,18 +53,18 @@ class RollsDb(AbstractRollsDB):
     # INTEGER
 
     def duels_contract_add(self, message_id, timestamp):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO duels(message_id) VALUES (%s);""", (message_id, ))
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('add contract')
             logging.info(f'in-transaction select: {res}')
         await asyncio.sleep(5)
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info(f'second transaction select: {res}')
 
     def duels_contract_get(self, message_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             # c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute("""SELECT user_id, target_id, points
@@ -78,14 +78,14 @@ class RollsDb(AbstractRollsDB):
             return res
 
     def duel_get(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('get all duels')
             logging.info(f'select: {res}' )
             return dict(res)
 
     def duels_contract_find(self, user_id, target_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             # c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute("""SELECT message_id, timestamp, points FROM duels 
@@ -100,28 +100,28 @@ class RollsDb(AbstractRollsDB):
             return res
 
     def duels_contract_clear(self, message_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("DELETE FROM duels WHERE message_id = %s", (message_id,))
 
     def guild_reg(self, guild_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO guilds(guild_id) 
                    VALUES (%s) 
                    ON CONFLICT(guild_id) DO NOTHING;""", (guild_id,))
 
     def guild_reg_stop(self, guild_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("DELETE FROM guilds WHERE guild_id = %s;", (guild_id,))
 
     def get_guilds(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.row_factory = lambda cursor: lambda row: row[0]
             res = c.execute("SELECT guild_id FROM guilds").fetchall()
             c.row_factory = None
             return res
 
     def points_set(self, guild_id, user_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO rolls(reg_id, user_id, points)
             SELECT id, %s, %s FROM guilds 
             WHERE guild_id = %s
@@ -129,7 +129,7 @@ class RollsDb(AbstractRollsDB):
             DO UPDATE SET points = excluded.points;""", (user_id, points, guild_id))
 
     def points_add(self, guild_id, user_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO rolls(reg_id, user_id, points)
             SELECT id, %s, %s FROM guilds 
             WHERE guild_id = %s
@@ -137,7 +137,7 @@ class RollsDb(AbstractRollsDB):
             DO UPDATE SET points = rolls.points + excluded.points;""", (user_id, points, guild_id))
 
     def points_get(self, guild_id, user_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             logging.info(f"User {user_id} request points in guild {guild_id}")
 
             c.row_factory = lambda cursor: lambda row: row[0]
@@ -157,7 +157,7 @@ class RollsDb(AbstractRollsDB):
             return res
 
     def points_table(self, guild_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             res = c.execute("""SELECT user_id, points FROM rolls
                 WHERE reg_id = (SELECT id FROM guilds WHERE guild_id = %s)""", (guild_id,)
                             ).fetchall()

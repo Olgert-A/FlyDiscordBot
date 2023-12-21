@@ -13,14 +13,14 @@ class LevelsDb(AbstractLevelsDB):
         self._stats_create()
 
     def _channels_create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS channels (
                 id SERIAL PRIMARY KEY, 
                 channel_id BIGINT NOT NULL UNIQUE
                 );""")
 
     def _stats_create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS stats (
                 id SERIAL PRIMARY KEY, 
                 reg_id SERIAL,
@@ -31,24 +31,24 @@ class LevelsDb(AbstractLevelsDB):
                 );""")
 
     def channel_reg(self, channel_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO channels(channel_id) 
                    VALUES (%s) 
                    ON CONFLICT(channel_id) DO NOTHING;""", (channel_id,))
 
     def channel_reg_stop(self, channel_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("DELETE FROM channels WHERE channel_id = %s;", (channel_id,))
 
     def get_channels(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.row_factory = lambda cursor: lambda row: row[0]
             res = c.execute("SELECT channel_id FROM channels").fetchall()
             c.row_factory = None
             return res
 
     def points_set(self, channel_id, user_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO stats(reg_id, user_id, points)
             SELECT id, %s, %s FROM channels 
             WHERE channel_id = %s
@@ -56,7 +56,7 @@ class LevelsDb(AbstractLevelsDB):
             DO UPDATE SET points = excluded.points;""", (user_id, points, channel_id))
 
     def points_add(self, channel_id, user_id, points):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO stats(reg_id, user_id, points)
             SELECT id, %s, %s FROM channels 
             WHERE channel_id = %s
@@ -64,7 +64,7 @@ class LevelsDb(AbstractLevelsDB):
             DO UPDATE SET points = stats.points + excluded.points;""", (user_id, points, channel_id))
 
     def points_get(self, channel_id, user_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             logging.info(f"User {user_id} request points in channel {channel_id}")
 
             c.row_factory = lambda cursor: lambda row: row[0]
@@ -84,7 +84,7 @@ class LevelsDb(AbstractLevelsDB):
             return res
 
     def points_table(self, channel_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             res = c.execute("""SELECT user_id, points FROM stats
                 WHERE reg_id = (SELECT id FROM channels WHERE channel_id = %s)""", (channel_id,)
                             ).fetchall()

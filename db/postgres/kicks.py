@@ -11,7 +11,7 @@ class KicksDb(AbstractKicksDb):
         self._create()
 
     def _create(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""CREATE TABLE IF NOT EXISTS kicks (
                             id SERIAL PRIMARY KEY, 
                             reg_id SERIAL,
@@ -22,7 +22,7 @@ class KicksDb(AbstractKicksDb):
                             );""")
 
     def set(self, channel_id, user_id, uses):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO kicks(reg_id, user_id, uses)
             SELECT id, %s, %s FROM channels 
             WHERE channel_id = %s
@@ -30,7 +30,7 @@ class KicksDb(AbstractKicksDb):
             DO UPDATE SET uses = excluded.uses;""", (user_id, uses, channel_id))
 
     def add(self, channel_id, user_id, uses):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""INSERT INTO kicks(reg_id, user_id, uses)
             SELECT id, %s, %s FROM channels 
             WHERE channel_id = %s
@@ -38,7 +38,7 @@ class KicksDb(AbstractKicksDb):
             DO UPDATE SET uses = kicks.uses + excluded.uses;""", (user_id, uses, channel_id))
 
     def get(self, channel_id, user_id):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute(
@@ -55,5 +55,5 @@ class KicksDb(AbstractKicksDb):
             return res
 
     def clear(self):
-        with psycopg.connect(self.DATABASE_URL) as c:
+        with psycopg.connect(self.DATABASE_URL, autocommit=True) as c:
             c.execute("""UPDATE kicks SET uses = 0""")
