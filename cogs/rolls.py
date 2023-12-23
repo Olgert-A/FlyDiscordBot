@@ -38,7 +38,7 @@ class RollsCog(commands.Cog):
 
     def is_contract_exist(self, user_id_to_find, target_id_to_find):
         logging.info(f'is contract exist: {user_id_to_find}--{target_id_to_find}')
-        for message_id, (user_id, target_id, points, timestamp) in self.duels:
+        for message_id, (user_id, target_id, points, timestamp) in self.duels.items():
             if user_id_to_find == user_id and target_id_to_find == target_id:
                 logging.info(f'True')
                 return True
@@ -147,8 +147,9 @@ class RollsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         message = reaction.message
-        emo = "\N{THUMBS UP SIGN}"
-        logging.info(f'message: {message.id} reaction: {reaction.emoji} eq: {reaction.emoji == emo}')
+        emoji_yes = '👍'
+        emoji_no = '👎'
+        logging.info(f'message: {message.id} reaction: {reaction.emoji} eq: {reaction.emoji == emoji_yes}')
         #get_rolls_db().duel_get()
         contract = self.duels_get_by_id(message.id)
         logging.info(f'contract: {contract}')
