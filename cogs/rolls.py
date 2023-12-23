@@ -148,7 +148,7 @@ class RollsCog(commands.Cog):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         message = reaction.message
         emo = "\N{THUMBS UP SIGN}"
-        logging.info(f'message: {message.id} reaction: {reaction.emoji}')
+        logging.info(f'message: {message.id} reaction: {reaction.emoji} eq: {reaction.emoji == emo}')
         #get_rolls_db().duel_get()
         contract = self.duels_get_by_id(message.id)
         logging.info(f'contract: {contract}')
