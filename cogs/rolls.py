@@ -108,6 +108,11 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
+    @app_commands.rename(target='цель')
+    @app_commands.describe(target='С кем деремся за сердечки')
+    @app_commands.rename(points='ставка')
+    @app_commands.describe(points='Сколько сердечек хотим украсть')
+    @app_commands.checks.cooldown(1, 60)
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
         user = ctx.user
 
