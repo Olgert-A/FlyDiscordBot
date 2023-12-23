@@ -162,12 +162,18 @@ class RollsCog(commands.Cog):
         if target_id != user.id:
             return
 
+        if reaction.emoji == emoji_no:
+            await message.channel.send(f'<@{user_id}>, <@{target_id}>, отказался от дуэли, дуэль отменена!')
+            self.duel_clear(message.id)
+            return 
+
         user_points_check = self.check_points_exist(message.guild.id, user_id, points)
         target_points_check = self.check_points_exist(message.guild.id, target_id, points)
 
         if not user_points_check or not target_points_check:
             await message.channel.send(f'<@{user_id}>, <@{target_id}>, у кого-то из вас нету нужного количества сердечек, дуэль отменена!')
             self.duel_clear(message.id)
+            return
 
         win_sign = random.choice([1, -1])
         pts_to_add = win_sign * points
