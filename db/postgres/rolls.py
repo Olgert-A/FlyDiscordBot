@@ -57,8 +57,8 @@ class RollsDb(AbstractRollsDB):
 
     def duels_add(self, message_id, user_id, target_id, points, timestamp):
         logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
-        logging.info(f'contracts: {self.duels}')
         self.duels[message_id] = (user_id, target_id, points, timestamp)
+        logging.info(f'contracts: {self.duels}')
 
     def duels_get_by_id(self, message_id):
         logging.info(f'get contract: {message_id}')
