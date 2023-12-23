@@ -13,6 +13,10 @@ class RollsDb(AbstractRollsDB):
         self._guilds_create()
         self._rolls_create()
         self._duels_create()
+        # contract dictionary
+        # key - message_id: int
+        # value - tuple(user_id: int, target_id: int, points: int, timestamp: datetime)
+        self.duels = {}
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -38,19 +42,43 @@ class RollsDb(AbstractRollsDB):
 
     def _duels_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE duels;""")
-            c.execute("""CREATE TABLE IF NOT EXISTS duels (
-                id SERIAL PRIMARY KEY, 
-                message_id BIGINT
-                );""")
+            c.execute("""DROP TABLE IF EXISTS duels;""")
+            # c.execute("""CREATE TABLE IF NOT EXISTS duels (
+            #     id SERIAL PRIMARY KEY,
+            #     message_id BIGINT,
+            #     timestamp TIMESTAMP NOT NULL,
+            # user_id
+            # BIGINT,
+            # target_id
+            # BIGINT,
+            # points
+            # INTEGER
+            #     );""")
 
-    # timestamp TIMESTAMP NOT NULL,
-    # user_id
-    # BIGINT,
-    # target_id
-    # BIGINT,
-    # points
-    # INTEGER
+    def duels_add(self, message_id, user_id, target_id, points, timestamp):
+        logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
+        logging.info(f'contracts: {self.duels}')
+        self.duels[message_id] = (user_id, target_id, points, timestamp)
+
+    def duels_get_by_id(self, message_id):
+        logging.info(f'get contract: {message_id}')
+        return self.duels.get(message_id)
+
+    def is_contract_exist(self, user_id_to_find, target_id_to_find):
+        logging.info(f'is contract exist: {user_id_to_find}--{target_id_to_find}')
+        for message_id, (user_id, target_id, points, timestamp) in self.duels:
+            if user_id_to_find == user_id and target_id_to_find == target_id:
+                logging.info(f'True')
+                return True
+
+        logging.info(f'False')
+        return False
+
+    def duel_clear(self, message_id):
+        if self.duels.get(message_id):
+            logging.info(f'delete contract: {message_id}')
+            del self.duels[message_id]
+            logging.info(f'contracts: {self.duels}')
 
     def duels_contract_add(self, message_id, timestamp):
         with psycopg.connect(self.DATABASE_URL) as c:

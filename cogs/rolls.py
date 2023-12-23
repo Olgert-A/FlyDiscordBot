@@ -96,7 +96,7 @@ class RollsCog(commands.Cog):
             await ctx.response.send_message(f"У твоей цели нету столько сердечек, дружок")
             return
 
-        contract = get_rolls_db().duels_contract_find(user.id, target.id)
+        contract = get_rolls_db().is_contract_exist(user.id, target.id)
         if contract:
             await ctx.response.send_message(f"Ты уже ждёшь дуэли со своей целью")
             return
@@ -107,21 +107,20 @@ class RollsCog(commands.Cog):
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
         logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
-        get_rolls_db().duels_contract_add(message.id, datetime.datetime.now(), user.id, target.id, points)
-
+        get_rolls_db().duels_add(message.id, user.id, target.id, points, datetime.datetime.now())
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         message = reaction.message
         logging.info(f'message: {message.id}')
         get_rolls_db().duel_get()
-        contract = get_rolls_db().duels_contract_get(message_id=message.id)
+        contract = get_rolls_db().duels_get_by_id(message.id)
         logging.info(f'contract: {contract}')
 
         if not contract:
             return
 
-        timestamp, user_id, target_id, points = contract
+        user_id, target_id, points, timestamp = contract
 
         if target_id != user.id:
             return
@@ -137,7 +136,7 @@ class RollsCog(commands.Cog):
         pts_to_add = win_sign * points
         get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
         get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
-        get_rolls_db().duels_contract_clear(message.id)
+        get_rolls_db().duel_clear(message.id)
         await message.channel.send(f"{name(user_id)} вызывает на дуэль {name(target_id)} и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
 
     @roll.error
