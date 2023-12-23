@@ -62,6 +62,7 @@ class RollsDb(AbstractRollsDB):
 
     def duels_get_by_id(self, message_id):
         logging.info(f'get contract: {message_id}')
+        logging.info(f'contracts: {self.duels}')
         return self.duels.get(message_id)
 
     def is_contract_exist(self, user_id_to_find, target_id_to_find):
