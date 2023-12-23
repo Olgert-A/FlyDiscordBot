@@ -167,7 +167,7 @@ class RollsCog(commands.Cog):
         get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
         get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
         self.duel_clear(message.id)
-        await message.channel.send(f"{name(user_id)} вызывает на дуэль {name(target_id)} и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
+        await message.channel.send(f"<@{user_id}> вызывает на дуэль <@{target_id}> и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
 
     @roll.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
