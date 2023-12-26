@@ -105,7 +105,13 @@ class RollsCog(commands.Cog):
     async def test(self, ctx: discord.Interaction):
         get_rolls_db().duels_drop()
         get_rolls_db().duels_contract_add(123123123, 456456456, 789789789, 100, datetime.datetime.now())
-        get_rolls_db().duel_get()
+        contract = get_rolls_db().duels_contract_get(123123123)
+        logging.info(f'contract get = {contract}')
+        contract = get_rolls_db().duels_contract_find(456456456, 789789789)
+        logging.info(f'contract find = {contract}')
+        get_rolls_db().duels_contract_clear(123123123)
+        contract = get_rolls_db().duel_get()
+        logging.info(f'contracts = {contract}')
 
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
