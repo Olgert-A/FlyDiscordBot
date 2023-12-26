@@ -139,6 +139,7 @@ class RollsCog(commands.Cog):
             return
 
         contract = self.is_contract_exist(user.id, target.id)
+        contract = get_rolls_db().duels_contract_find(user.id, target.id)
         if contract:
             await ctx.response.send_message(f"Ты уже ждёшь дуэли со своей целью")
             return
@@ -150,7 +151,7 @@ class RollsCog(commands.Cog):
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
         logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
         self.duels_add(message.id, user.id, target.id, points, datetime.datetime.now())
-        get_rolls_db().duels_contract_add()
+        get_rolls_db().duels_contract_add(message.id, user.id, target.id, points, datetime.datetime.now())
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -158,8 +159,8 @@ class RollsCog(commands.Cog):
         emoji_yes = '👍'
         emoji_no = '👎'
         logging.info(f'message: {message.id} reaction: {reaction.emoji} eq: {reaction.emoji == emoji_yes}')
-        #get_rolls_db().duel_get()
         contract = self.duels_get_by_id(message.id)
+        contract = get_rolls_db().duels_contract_get(message.id)
         logging.info(f'contract: {contract}')
 
         if not contract:
@@ -173,6 +174,7 @@ class RollsCog(commands.Cog):
         if reaction.emoji == emoji_no:
             await message.channel.send(f'<@{user_id}>, <@{target_id}>, отказался от дуэли, дуэль отменена!')
             self.duel_clear(message.id)
+            get_rolls_db().duels_contract_clear(message.id)
             return 
 
         user_points_check = self.check_points_exist(message.guild.id, user_id, points)
@@ -181,6 +183,7 @@ class RollsCog(commands.Cog):
         if not user_points_check or not target_points_check:
             await message.channel.send(f'<@{user_id}>, <@{target_id}>, у кого-то из вас нету нужного количества сердечек, дуэль отменена!')
             self.duel_clear(message.id)
+            get_rolls_db().duels_contract_clear(message.id)
             return
 
         win_sign = random.choice([1, -1])
@@ -188,6 +191,7 @@ class RollsCog(commands.Cog):
         get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
         get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
         self.duel_clear(message.id)
+        get_rolls_db().duels_contract_clear(message.id)
         await message.channel.send(f"<@{user_id}> вызывает на дуэль <@{target_id}> и {'выигрывает' if win_sign == 1 else 'проигрывает'} {points} сердечек!")
 
     @roll.error

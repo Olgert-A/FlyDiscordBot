@@ -62,7 +62,7 @@ class RollsDb(AbstractRollsDB):
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
             try:
-                res = c.execute("""SELECT user_id, target_id, points
+                res = c.execute("""SELECT user_id, target_id, points, timestamp
                                 FROM duels WHERE message_id = %s;""", (message_id,)).fetchone()
             except psycopg.Error as e:
                 logging.error(f"Get duels contract raise exception: {e}")
