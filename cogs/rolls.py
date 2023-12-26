@@ -104,7 +104,7 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='test1')
     async def test(self, ctx: discord.Interaction):
         get_rolls_db().duels_drop()
-        get_rolls_db().duels_contract_add(ctx.message.id, ctx.user.id, ctx.user.id+1, 100, datetime.datetime.now())
+        get_rolls_db().duels_contract_add(123123123, 456456456, 789789789, 100, datetime.datetime.now())
         get_rolls_db().duel_get()
 
     @app_commands.command(name='дуэль',
