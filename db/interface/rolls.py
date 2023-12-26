@@ -33,23 +33,11 @@ class AbstractRollsDB(ABC, SingletonDB):
     @abstractmethod
     def points_table(self, guild_id): pass
 
-    # @abstractmethod
-    # def duels_add(self, message_id, user_id, target_id, points, timestamp): pass
-    #
-    # @abstractmethod
-    # def duels_get_by_id(self, message_id): pass
-    #
-    # @abstractmethod
-    # def is_contract_exist(self, user_id_to_find, target_id_to_find): pass
-    #
-    # @abstractmethod
-    # def duel_clear(self, message_id): pass
-
     @abstractmethod
     def _duels_create(self): pass
 
     @abstractmethod
-    def duels_contract_add(self, message_id, timestamp): pass
+    def duels_contract_add(self, message_id, user_id, target_id, points, timestamp): pass
 
     @abstractmethod
     def duels_contract_get(self, message_id): pass

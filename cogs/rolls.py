@@ -103,7 +103,8 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='test1')
     async def test(self, ctx: discord.Interaction):
-        get_rolls_db().duels_contract_add(123456789012345, datetime.datetime.now())
+        get_rolls_db().duels_drop()
+        get_rolls_db().duels_contract_add(ctx.message.id, ctx.user.id, ctx.user.id+1, 100, datetime.datetime.now())
         get_rolls_db().duel_get()
 
     @app_commands.command(name='дуэль',
@@ -143,6 +144,7 @@ class RollsCog(commands.Cog):
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
         logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
         self.duels_add(message.id, user.id, target.id, points, datetime.datetime.now())
+        get_rolls_db().duels_contract_add()
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):

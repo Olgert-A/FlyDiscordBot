@@ -16,7 +16,7 @@ class RollsDb(AbstractRollsDB):
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE IF EXISTS guilds, rolls;""")
+            c.execute("""DROP TABLE IF EXISTS guilds, rolls, duels;""")
 
     def _guilds_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -38,48 +38,42 @@ class RollsDb(AbstractRollsDB):
 
     def _duels_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE IF EXISTS duels;""")
-            # c.execute("""CREATE TABLE IF NOT EXISTS duels (
-            #     id SERIAL PRIMARY KEY,
-            #     message_id BIGINT,
-            #     timestamp TIMESTAMP NOT NULL,
-            # user_id
-            # BIGINT,
-            # target_id
-            # BIGINT,
-            # points
-            # INTEGER
-            #     );""")
+            c.execute("""CREATE TABLE IF NOT EXISTS duels (
+                id SERIAL PRIMARY KEY,
+                message_id BIGINT,
+                user_id BIGINT,
+                target_id BIGINT,
+                points INTEGER,
+                timestamp TIMESTAMP
+                );""")
 
-    def duels_contract_add(self, message_id, timestamp):
+    def duels_drop(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""INSERT INTO duels(message_id) VALUES (%s);""", (message_id, ))
+            c.execute("""DROP TABLE IF EXISTS duels;""")
+
+    def duels_contract_add(self, message_id, user_id, target_id, points, timestamp):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO duels(message_id, user_id, target_id, points, timestamp) 
+            VALUES (%s, %s, %s, %s, %s);""", (message_id, user_id, target_id, points, timestamp))
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('add contract')
             logging.info(f'in-transaction select: {res}')
-        with psycopg.connect(self.DATABASE_URL) as c:
-            res = c.execute("""SELECT * FROM duels;""").fetchall()
-            logging.info(f'second transaction select: {res}')
 
     def duels_contract_get(self, message_id):
         with psycopg.connect(self.DATABASE_URL) as c:
-            # c.row_factory = lambda cursor: lambda row: row[0]
             try:
                 res = c.execute("""SELECT user_id, target_id, points
                                 FROM duels WHERE message_id = %s;""", (message_id,)).fetchone()
             except psycopg.Error as e:
                 logging.error(f"Get duels contract raise exception: {e}")
                 return
-            # finally:
-            # c.row_factory = None
-            print(res)
             return res
 
     def duel_get(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             res = c.execute("""SELECT * FROM duels;""").fetchall()
             logging.info('get all duels')
-            logging.info(f'select: {res}' )
+            logging.info(f'select: {res}')
             return dict(res)
 
     def duels_contract_find(self, user_id, target_id):
