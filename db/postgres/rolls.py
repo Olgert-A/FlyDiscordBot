@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import os
 import logging
 import psycopg
@@ -75,6 +76,10 @@ class RollsDb(AbstractRollsDB):
             logging.info('get all duels')
             logging.info(f'select: {res}')
             return res
+
+    def duel_clear_older_than(self, minutes: int):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("DELETE FROM duels WHERE timestamp < NOW() - interval '%s mins'", (minutes,))
 
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
