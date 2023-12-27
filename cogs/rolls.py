@@ -87,7 +87,7 @@ class RollsCog(commands.Cog):
     async def test1(self, ctx: discord.Interaction, time: int):
         get_rolls_db().duels_contract_add(2, 2, 2, 2, datetime.datetime.now() - datetime.timedelta(minutes=6))
         get_rolls_db().duels_contract_add(2, 2, 2, 2, datetime.datetime.now() - datetime.timedelta(minutes=2))
-        get_rolls_db().duel_clear_older_than(5)
+        get_rolls_db().duel_clear_older_than(datetime.datetime.now() - datetime.timedelta(minutes=time))
         get_rolls_db().duel_get()
 
     @app_commands.command(name='крутить',
