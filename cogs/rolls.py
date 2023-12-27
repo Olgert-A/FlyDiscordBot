@@ -85,6 +85,7 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='test1')
     async def test1(self, ctx: discord.Interaction, time: int):
+        get_rolls_db().duels_contract_add(2, 2, 2, 2, datetime.datetime.now() - datetime.timedelta(minutes=6))
         get_rolls_db().duels_contract_add(2, 2, 2, 2, datetime.datetime.now() - datetime.timedelta(minutes=2))
         get_rolls_db().duel_clear_older_than(5)
         get_rolls_db().duel_get()
