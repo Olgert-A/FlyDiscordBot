@@ -94,13 +94,13 @@ class RollsCog(commands.Cog):
                           description='Рулетка сердечек')
     @app_commands.rename(pts_arg='сердечки')
     @app_commands.describe(pts_arg='Сколько крутим')
-    @app_commands.checks.dynamic_cooldown(roll_cooldown_checker, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def roll(self, ctx: discord.Interaction, pts_arg: str):
         await ctx.response.defer()
         parsed_pts = RollParser.parse(pts_arg)
         if not parsed_pts:
             await ctx.followup.send(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
-            app_commands.Cooldown.reset(roll_cooldown)
+            #app_commands.Cooldown.reset(roll_cooldown)
             return
 
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
@@ -119,7 +119,7 @@ class RollsCog(commands.Cog):
 
         if roll_pts > user_pts:
             await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
-            app_commands.Cooldown.reset(roll_cooldown)
+            #app_commands.Cooldown.reset(roll_cooldown)
             return
 
         win_sign = random.choice([1, -1])
@@ -145,7 +145,7 @@ class RollsCog(commands.Cog):
     @app_commands.describe(target='С кем деремся за сердечки')
     @app_commands.rename(points='ставка')
     @app_commands.describe(points='Сколько сердечек хотим украсть')
-    @app_commands.checks.dynamic_cooldown(duel_cooldown_checker, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
         await ctx.response.defer()
         user = ctx.user
@@ -155,24 +155,24 @@ class RollsCog(commands.Cog):
 
         if points < 0:
             await ctx.followup.send(f"Низя крутить меньше 0 сердечек")
-            app_commands.Cooldown.reset(duel_cooldown)
+            #app_commands.Cooldown.reset(duel_cooldown)
             return
 
         if not user_points_check:
             await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
-            app_commands.Cooldown.reset(duel_cooldown)
+            #app_commands.Cooldown.reset(duel_cooldown)
             return
 
         if not target_points_check:
             await ctx.followup.send(f"У твоей цели нету столько сердечек, дружок")
-            app_commands.Cooldown.reset(duel_cooldown)
+            #app_commands.Cooldown.reset(duel_cooldown)
             return
 
         contract = self.is_contract_exist(user.id, target.id)
         contract = get_rolls_db().duels_contract_find(user.id, target.id)
         if contract:
             await ctx.followup.send(f'Ты уже ждёшь дуэли со своей целью, дружок')
-            app_commands.Cooldown.reset(duel_cooldown)
+            #app_commands.Cooldown.reset(duel_cooldown)
             return
 
         await ctx.followup.send(f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
