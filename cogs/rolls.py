@@ -85,12 +85,16 @@ class RollsCog(commands.Cog):
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
 
         factor, roll_type = parsed_pts
+        logging.info(parsed_pts)
 
         if roll_type == RollTypes.POINTS:
             roll_pts = factor
 
         if roll_type == RollTypes.PERCENT:
             roll_pts = int(user_pts * factor)
+
+        if roll_type == RollTypes.ALL:
+            roll_pts = user_pts
 
         # if roll_pts < 0:
         #     await ctx.response.send_message(f"Низя крутить меньше 0 сердечек")

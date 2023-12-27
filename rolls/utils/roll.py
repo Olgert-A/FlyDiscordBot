@@ -22,7 +22,7 @@ class RollParser:
 
         if all_in:
             factor = 100.0
-            roll_type = RollTypes.PERCENT
+            roll_type = RollTypes.ALL
             return factor, roll_type
         elif percent:
             extracted = int(percent[0][:-1])
