@@ -57,6 +57,7 @@ class FunCog(commands.Cog):
 
     @kick.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        await interaction.response.defer()
         if isinstance(error, app_commands.CommandOnCooldown):
             await interaction.followup.send(str(error), ephemeral=True)
             #await interaction.response.send_message(str(error), ephemeral=True)
