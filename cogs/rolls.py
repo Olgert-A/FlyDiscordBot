@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 from db.current import get_rolls_db
 from levels.utils.misc import LevelMisc
+from rolls.utils.roll import RollParser, RollTypes
 
 
 name = LevelMisc.name
@@ -75,12 +76,27 @@ class RollsCog(commands.Cog):
     @app_commands.rename(roll_pts='сердечки')
     @app_commands.describe(roll_pts='Сколько крутим')
     @app_commands.checks.cooldown(1, 60)
-    async def roll(self, ctx: discord.Interaction, roll_pts: int):
-        if roll_pts < 0:
-            await ctx.response.send_message(f"Низя крутить меньше 0 сердечек")
+    async def roll(self, ctx: discord.Interaction, pts_arg: str):
+        parsed_pts = RollParser.parse(pts_arg)
+        if not parsed_pts:
+            await ctx.response.send_message(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
             return
-        
+
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+
+        factor, roll_type = parsed_pts
+
+        if roll_type == RollTypes.POINTS:
+            roll_pts = factor
+
+        if roll_type == RollTypes.PERCENT:
+            roll_pts = int(user_pts * factor)
+
+        # if roll_pts < 0:
+        #     await ctx.response.send_message(f"Низя крутить меньше 0 сердечек")
+        #     return
+        #
+        #
         if roll_pts > user_pts:
             await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
             return
@@ -100,18 +116,6 @@ class RollsCog(commands.Cog):
     def check_points_exist(guild_id, user_id, points):
         user_points = get_rolls_db().points_get(guild_id, user_id)
         return user_points >= points
-
-    @app_commands.command(name='test1')
-    async def test(self, ctx: discord.Interaction):
-        get_rolls_db().duels_drop()
-        get_rolls_db().duels_contract_add(123123123, 456456456, 789789789, 100, datetime.datetime.now())
-        contract = get_rolls_db().duels_contract_get(123123123)
-        logging.info(f'contract get = {contract}')
-        contract = get_rolls_db().duels_contract_find(456456456, 789789789)
-        logging.info(f'contract find = {contract}')
-        get_rolls_db().duels_contract_clear(123123123)
-        contract = get_rolls_db().duel_get()
-        logging.info(f'contracts = {contract}')
 
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
