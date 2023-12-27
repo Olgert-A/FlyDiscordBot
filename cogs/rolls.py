@@ -57,11 +57,13 @@ class RollsCog(commands.Cog):
                           description='Административная команда для подключения сервера к рулетке сердечек')
     @check_bot_author_permission()
     async def rolls_reg(self, ctx: discord.Interaction):
+        await ctx.response.defer()
         get_rolls_db().guild_reg(ctx.guild.id)
         for m in ctx.guild.members:
             get_rolls_db().points_add(ctx.guild.id, m.id, 0)
 
-        await ctx.response.send_message(f'Канал зарегистрирован в программе **Сердечки**!', ephemeral=True)
+        await ctx.followup.send(f'Сервер зарегистрирован в программе **Сердечки**!', ephemeral=True)
+        #await ctx.response.send_message(f'Сервер зарегистрирован в программе **Сердечки**!', ephemeral=True)
 
     @app_commands.command(name='расстаться',
                           description='Административная команда для отключения сервера от рулетки сердечек')
@@ -77,9 +79,11 @@ class RollsCog(commands.Cog):
     @app_commands.describe(pts_arg='Сколько крутим')
     @app_commands.checks.cooldown(1, 60)
     async def roll(self, ctx: discord.Interaction, pts_arg: str):
+        await ctx.response.defer()
         parsed_pts = RollParser.parse(pts_arg)
         if not parsed_pts:
-            await ctx.response.send_message(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
+            await ctx.followup.send(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
+            #await ctx.response.send_message(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
             return
 
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
@@ -102,13 +106,15 @@ class RollsCog(commands.Cog):
         #
         #
         if roll_pts > user_pts:
-            await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
+            await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
+            #await ctx.response.send_message(f"У тебя маловато сердечек на счету, дружок")
             return
 
         win_sign = random.choice([1, -1])
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
+        await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
+        #await ctx.response.send_message(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
 
     @app_commands.command(name='сердечки',
                           description='Узнай, сколько у тебя сердечек')
