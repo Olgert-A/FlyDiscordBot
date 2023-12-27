@@ -73,8 +73,8 @@ class RollsCog(commands.Cog):
 
     @app_commands.command(name='крутить',
                           description='Рулетка сердечек')
-    @app_commands.rename(roll_pts='сердечки')
-    @app_commands.describe(roll_pts='Сколько крутим')
+    @app_commands.rename(pts_arg='сердечки')
+    @app_commands.describe(pts_arg='Сколько крутим')
     @app_commands.checks.cooldown(1, 60)
     async def roll(self, ctx: discord.Interaction, pts_arg: str):
         parsed_pts = RollParser.parse(pts_arg)
