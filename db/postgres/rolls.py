@@ -79,7 +79,7 @@ class RollsDb(AbstractRollsDB):
 
     def duel_clear_older_than(self, minutes: int):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("DELETE FROM duels WHERE timestamp < NOW() - interval '%s mins'", (minutes,))
+            c.execute("DELETE FROM duels WHERE timestamp < NOW() - interval '5 mins'", (minutes,))
 
     def duels_contract_find(self, user_id, target_id):
         with psycopg.connect(self.DATABASE_URL) as c:
