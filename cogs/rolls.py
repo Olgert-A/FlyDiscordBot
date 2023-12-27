@@ -205,7 +205,8 @@ class RollsCog(commands.Cog):
     @duel.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.CommandOnCooldown):
-            await interaction.response.send_message(str(error), ephemeral=True)
+            await interaction.followup.send(str(error), ephemeral=True)
+            #await interaction.response.send_message(str(error), ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
