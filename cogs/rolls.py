@@ -139,6 +139,14 @@ class RollsCog(commands.Cog):
         user_points = get_rolls_db().points_get(guild_id, user_id)
         return user_points >= points
 
+    @app_commands.command(name='сброс',
+                          description='Административная команда для сброса активных контрактов дуэлей')
+    @check_bot_author_permission()
+    async def reset_contracts(self, ctx: discord.Interaction):
+        await ctx.response.defer(ephemeral=True)
+        get_rolls_db().duel_clear_older_than(datetime.datetime.now())
+        await ctx.followup.send(f"Контракты очищены!")
+            
     @app_commands.command(name='дуэль',
                           description='Укради чужие сердечки')
     @app_commands.rename(target='цель')
