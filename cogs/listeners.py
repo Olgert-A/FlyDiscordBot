@@ -18,13 +18,13 @@ class ListenerCog(commands.Cog):
         def tack_starter(task_coroutine, params=None):
             task = task_coroutine.get_task()
             if task and not task.done():
-                logging.info(f"task {task} already runned!")
+                logging.info(f"task {task_coroutine} already runned!")
                 return
             if params:
                 task_coroutine.start(params)
             else:
                 task_coroutine.start()
-            logging.info(f"task {task} is starting!")
+            logging.info(f"task {task_coroutine} is starting!")
 
         tack_starter(kicks_daily_clear)
         #kicks_daily_clear.start()
