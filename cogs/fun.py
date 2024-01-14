@@ -55,6 +55,13 @@ class FunCog(commands.Cog):
         await ctx.followup.send(f'{name(ctx.user)} пинает по жеппе {name(random.choice(members))}! <3')
         #await ctx.response.send_message(f'{name(ctx.user)} пинает по жеппе {name(random.choice(members))}! <3')
 
+    @app_commands.command(name='узнать', description='Узнай, сколько в тебе той черты, которую укажешь')
+    @app_commands.rename(trait='что')
+    @app_commands.describe(trait='что в себе проверяешь')
+    async def know(self, ctx: discord.Interaction, trait: str):
+        await ctx.response.defer()
+        await ctx.followup.send(f"Сегодня ты {trait} на {random.randint(0, 100)}%!")
+
     @kick.error
     async def on_test_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         await interaction.response.defer()
