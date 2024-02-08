@@ -63,9 +63,7 @@ class FunCog(commands.Cog):
         await ctx.followup.send(f"Сегодня ты {trait} на {random.randint(0, 100)}%!")
 
     @app_commands.command(name='решить', description='Получи ответ да/нет на свой вопрос')
-    @app_commands.rename(question='вопрос')
-    @app_commands.describe(question='на который нужен ответ')
-    async def solve(self, ctx: discord.Interaction, question: str = ''):
+    async def solve(self, ctx: discord.Interaction):
         await ctx.response.defer()
         await ctx.followup.send(f"{random.choice(['Разумеется', 'Скорее', 'Категорически', 'Определённо', 'Возможно', 'Без сомнений'])}, {random.choice(['да', 'нет'])}!")
 
