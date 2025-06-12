@@ -27,7 +27,7 @@ class FunCog(commands.Cog):
         #await ctx.response.send_message(f"Любовь {who} к {target} составляет {random.randint(0, 100)}%!")
 
     @app_commands.command(name='игра', description='Во что сегодня играем')
-    async def love(self, ctx: discord.Interaction):
+    async def game(self, ctx: discord.Interaction):
         await ctx.response.defer()
         sheet = ['марвел', "baldur's gate", 'cocoon', 'life is strange', 'cyberpank', 'detroit', 
                  'journey', 'v rising', 'minecraft', 'slender', 'half life', 'the last of us', 'ori', 'outer wilds']
