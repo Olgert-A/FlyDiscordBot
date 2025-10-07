@@ -18,12 +18,13 @@ levels_db = get_levels_db()
 class LevelEvents:
     @staticmethod
     def get_events():
-        return [LevelEvents.circle,
-                LevelEvents.all_to_one,
-                LevelEvents.cut,
-                LevelEvents.tournament,
-                LevelEvents.team_kick,
+        return [LevelEvents.cut,
                 LevelEvents.extension]
+
+                #LevelEvents.circle,
+                #LevelEvents.all_to_one,
+                #LevelEvents.tournament,
+                #LevelEvents.team_kick,
 
     @staticmethod
     def circle(channel_id, members):
