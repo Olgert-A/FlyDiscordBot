@@ -90,7 +90,7 @@ class RollsCog(commands.Cog):
         get_rolls_db().duel_clear_older_than(datetime.datetime.now() - datetime.timedelta(minutes=time))
         get_rolls_db().duel_get()
 
-    @app_commands.command(name='give', description='Административная команда для выдачи сердечек')
+    @app_commands.command(name='одарить', description='Административная команда для выдачи сердечек')
     @app_commands.rename(target='цель')
     @app_commands.describe(target='Кому выдать сердечки')
     @app_commands.rename(points='количество')
