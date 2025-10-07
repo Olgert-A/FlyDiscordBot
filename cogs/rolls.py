@@ -90,6 +90,17 @@ class RollsCog(commands.Cog):
         get_rolls_db().duel_clear_older_than(datetime.datetime.now() - datetime.timedelta(minutes=time))
         get_rolls_db().duel_get()
 
+    @app_commands.command(name='give', description='Административная команда для выдачи сердечек')
+    @app_commands.rename(target='цель')
+    @app_commands.describe(target='Кому выдать сердечки')
+    @app_commands.rename(points='количество')
+    @app_commands.describe(points='Сколько сердечек выдать')
+    @check_bot_author_permission()
+    async def give_hearts(self, ctx: discord.Interaction, target: discord.Member, points: int):
+        await ctx.response.defer()
+        get_rolls_db().points_add(ctx.guild.id, target.id, points)
+        await ctx.followup.send(f'Сердечки выданы!', ephemeral=True)
+    
     @app_commands.command(name='крутить',
                           description='Рулетка сердечек')
     @app_commands.rename(pts_arg='сердечки')
