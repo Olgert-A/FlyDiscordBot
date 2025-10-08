@@ -105,7 +105,6 @@ class RollsCog(commands.Cog):
                           description='Рулетка сердечек')
     @app_commands.rename(pts_arg='сердечки')
     @app_commands.describe(pts_arg='Сколько крутим')
-    @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def roll(self, ctx: discord.Interaction, pts_arg: str):
         await ctx.response.defer()
         parsed_pts = RollParser.parse(pts_arg)
@@ -128,7 +127,7 @@ class RollsCog(commands.Cog):
         if roll_type == RollTypes.ALL:
             roll_pts = user_pts
 
-        if roll_pts > user_pts:
+        if roll_pts > user_pts or user_pts <= 0:
             await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
             #app_commands.Cooldown.reset(roll_cooldown)
             return
