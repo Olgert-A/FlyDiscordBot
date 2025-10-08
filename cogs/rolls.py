@@ -99,7 +99,7 @@ class RollsCog(commands.Cog):
     async def give_hearts(self, ctx: discord.Interaction, target: discord.Member, points: int):
         await ctx.response.defer()
         get_rolls_db().points_add(ctx.guild.id, target.id, points)
-        await ctx.followup.send(f'Сердечки выданы!', ephemeral=True)
+        await ctx.followup.send(f'{name(target)} получает сердечки в количестве {points}!')
     
     @app_commands.command(name='крутить',
                           description='Рулетка сердечек')
