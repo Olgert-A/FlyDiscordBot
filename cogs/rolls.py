@@ -37,8 +37,8 @@ class RollsCog(commands.Cog):
         # key - message_id: int
         # value - tuple(user_id: int, target_id: int, points: int, timestamp: datetime)
         self.duels = {}
-        random_factor = [-1, -1, -1, 1, 1, 1]
-        factor_index = 6
+        self.random_factor = [-1, -1, -1, 1, 1, 1]
+        self.factor_index = 6
     
     def get_win_sign(self):
         self.factor_index += 1
