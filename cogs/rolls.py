@@ -132,7 +132,8 @@ class RollsCog(commands.Cog):
             #app_commands.Cooldown.reset(roll_cooldown)
             return
 
-        win_sign = random.choice([1, -1])
+        win_sign = random.choice([2, 1, -1])
+        win_sign = 1 if win_sign > 0 else -1
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
         await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
@@ -193,7 +194,7 @@ class RollsCog(commands.Cog):
             #app_commands.Cooldown.reset(duel_cooldown)
             return
 
-        await ctx.followup.send(f"<@{target.id}>, с тобой хочет сразить {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
+        await ctx.followup.send(f"<@{target.id}>, с тобой хочет сразиться {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
         message = await ctx.original_response()
         await message.add_reaction('\N{THUMBS UP SIGN}')
         await message.add_reaction('\N{THUMBS DOWN SIGN}')
