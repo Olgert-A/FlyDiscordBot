@@ -47,7 +47,7 @@ class RollsCog(commands.Cog):
             self.factor_index = 0
             random.shuffle(self.random_factor)
             
-        return random_factor[factor_index]
+        return self.random_factor[factor_index]
 
     def duels_add(self, message_id, user_id, target_id, points, timestamp):
         logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
