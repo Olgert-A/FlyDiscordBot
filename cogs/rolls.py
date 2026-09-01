@@ -31,12 +31,23 @@ def duel_cooldown_checker(interaction: discord.Interaction):
 
 
 class RollsCog(commands.Cog):
+    random_factor = [-1, -1, -1, 1, 1, 1]
+    factor_index = 6
+    
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         # contract dictionary
         # key - message_id: int
         # value - tuple(user_id: int, target_id: int, points: int, timestamp: datetime)
         self.duels = {}
+    
+    def get_win_sign(self):
+        random_index += 1
+        if factor_index >= len(random_factor):
+            factor_index = 0
+            random_shuffle(random_factor)
+            
+        return random_factor[factor_index]
 
     def duels_add(self, message_id, user_id, target_id, points, timestamp):
         logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
@@ -132,11 +143,11 @@ class RollsCog(commands.Cog):
             #app_commands.Cooldown.reset(roll_cooldown)
             return
 
-        win_sign = random.choice([2, 1, -1])
-        win_sign = 1 if win_sign > 0 else -1
+        win_sign = #random.choice([2, 1, -1])
+        win_sign = self.get_win_sign() #1 if win_sign > 0 else -1
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}.")
+        await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
 
     @app_commands.command(name='сердечки',
                           description='Узнай, сколько у тебя сердечек')
@@ -236,7 +247,7 @@ class RollsCog(commands.Cog):
                 get_rolls_db().duels_contract_clear(message.id)
                 return
 
-            win_sign = random.choice([1, -1])
+            win_sign = self.get_win_sign() #random.choice([1, -1])
             pts_to_add = win_sign * points
             get_rolls_db().points_add(message.guild.id, user_id, pts_to_add)
             get_rolls_db().points_add(message.guild.id, target_id, -pts_to_add)
