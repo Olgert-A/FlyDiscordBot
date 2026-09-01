@@ -42,10 +42,10 @@ class RollsCog(commands.Cog):
         self.duels = {}
     
     def get_win_sign(self):
-        random_index += 1
-        if factor_index >= len(random_factor):
-            factor_index = 0
-            random_shuffle(random_factor)
+        self.factor_index += 1
+        if self.factor_index >= len(self.random_factor):
+            self.factor_index = 0
+            random.shuffle(self.random_factor)
             
         return random_factor[factor_index]
 
