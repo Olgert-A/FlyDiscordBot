@@ -30,16 +30,15 @@ def duel_cooldown_checker(interaction: discord.Interaction):
     return duel_cooldown
 
 
-class RollsCog(commands.Cog):
-    random_factor = [-1, -1, -1, 1, 1, 1]
-    factor_index = 6
-    
+class RollsCog(commands.Cog):    
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         # contract dictionary
         # key - message_id: int
         # value - tuple(user_id: int, target_id: int, points: int, timestamp: datetime)
         self.duels = {}
+        random_factor = [-1, -1, -1, 1, 1, 1]
+        factor_index = 6
     
     def get_win_sign(self):
         self.factor_index += 1
@@ -47,7 +46,7 @@ class RollsCog(commands.Cog):
             self.factor_index = 0
             random.shuffle(self.random_factor)
             
-        return self.random_factor[factor_index]
+        return self.random_factor[self.factor_index]
 
     def duels_add(self, message_id, user_id, target_id, points, timestamp):
         logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
@@ -143,7 +142,7 @@ class RollsCog(commands.Cog):
             #app_commands.Cooldown.reset(roll_cooldown)
             return
 
-        win_sign = #random.choice([2, 1, -1])
+        #win_sign = #random.choice([2, 1, -1])
         win_sign = self.get_win_sign() #1 if win_sign > 0 else -1
         pts_to_add = win_sign * roll_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
