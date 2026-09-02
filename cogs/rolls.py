@@ -39,6 +39,8 @@ class RollsCog(commands.Cog):
         self.duels = {}
         self.random_factor = [-1, -1, -1, 1, 1, 1]
         self.factor_index = 6
+        self.huesos_factor  = [-1, -1, 1, 1, 1, 1]
+        self.huesos_index = 6
     
     def get_win_sign(self):
         self.factor_index += 1
@@ -47,6 +49,14 @@ class RollsCog(commands.Cog):
             random.shuffle(self.random_factor)
             
         return self.random_factor[self.factor_index]
+
+    def get_huesos_sign(self):
+        self.huesos_index += 1
+        if self.huesos_index >= len(self.huesos_factor):
+            self.huesos_index = 0
+            random.shuffle(self.huesos_factor)
+            
+        return self.huesos_factor[self.huesos_index]
 
     def duels_add(self, message_id, user_id, target_id, points, timestamp):
         logging.info(f'add contract: {message_id}--{user_id}--{target_id}--{points}--{timestamp}')
@@ -110,6 +120,20 @@ class RollsCog(commands.Cog):
         await ctx.response.defer()
         get_rolls_db().points_add(ctx.guild.id, target.id, points)
         await ctx.followup.send(f'{name(target)} получает сердечки в количестве {points}!')
+
+    @app_commands.command(name='я_хуесос', description='Рулетка всех сердечек с повышенным шансом выигрыша')
+    async def huesos_roll(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+        win_sign = self.get_huesos_sign()
+        pts_to_add = win_sign * user_pts
+        get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
+        win_texts = ["пожал плоды своей искренности", "на этот раз остался в плюсе", "cорвал баснословный куш для нищих", "достиг головокружительного успеха", "доказал, что если долго пресмыкаться, система выплюнет тебе кость", "выиграл ровно столько, чтобы на секунду забыть, какое он ничтожество", "облизал барский сапог, выпросив-таки свою подачку"]
+        lose_texts = ["позорно проебал", "доказал это очередным проигрышем", "остался попёрдывать лежа в канаве", "пустил свою жопу по миру", "продемонстрировал эталонный пример тотальной никчёмности", "остался смаковать привкус собственного поражения"]
+        random.shuffle(win_texts)
+        random.shuffle(lose_texts)      
+        await ctx.followup.send(f"{name(ctx.user)} признался в том, что он хуесос и {win_texts[0] if win_sign == 1 else lose_texts[0]}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
+        
     
     @app_commands.command(name='крутить',
                           description='Рулетка сердечек')
