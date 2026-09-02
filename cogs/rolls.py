@@ -115,7 +115,7 @@ class RollsCog(commands.Cog):
                           description='Рулетка сердечек')
     @app_commands.rename(pts_arg='сердечки')
     @app_commands.describe(pts_arg='Сколько крутим')
-    async def roll(self, ctx: discord.Interaction, pts_arg: str):
+    async def roll(self, ctx: discord.Interaction, pts_arg: str = "100%"):
         await ctx.response.defer()
         parsed_pts = RollParser.parse(pts_arg)
         if not parsed_pts:
