@@ -147,29 +147,32 @@ class RollsCog(commands.Cog):
                 self.group_roll_index = -1
     
             user_exist = -1
-            for user in self.group_roll_users:
-                if ctx.user.id == user:
+            for user, id in self.group_roll_users:
+                if ctx.user.id == id:
                     user_exist = 1
                     
             if user_exist == 1:
                 result = "Ты уже участвуешь в групповой крутке! Список участников: "
             else:
-                self.group_roll_users.append(ctx.user.id)
+                self.group_roll_users.append((ctx.user, ctx.user.id))
                 result = "Новый участник групповой крутки! Список участников: "
             
             self.group_roll_index += 1
             win_sign = self.group_roll_factor[self.group_roll_index]
+
+            _, last_id = self.group_roll_users[len(self.group_roll_users) - 1]
             
-            for user in self.group_roll_users:
+            for user, id in self.group_roll_users:
                 result += f"{name(user)}"
-                if user == self.group_roll_users[len(self.group_roll_users) - 1]:
+                
+                if id == last_id:
                     result += "."
                 else:
                     result += ", "
                 
-                user_pts = get_rolls_db().points_get(ctx.guild.id, user)
+                user_pts = get_rolls_db().points_get(ctx.guild.id, id)
                 pts_to_add = win_sign * user_pts
-                get_rolls_db().points_add(ctx.guild.id, user, pts_to_add)
+                get_rolls_db().points_add(ctx.guild.id, id, pts_to_add)
                 
             if win_sign == 1:
                 result += "Выигрывают! Сердечки всех участников удвоены!"
