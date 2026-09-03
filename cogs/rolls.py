@@ -141,42 +141,47 @@ class RollsCog(commands.Cog):
     async def group_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
 
-        if len(self.group_roll_users) == 0:
-            random.shuffle(self.group_roll_factor)
-            self.group_roll_index = -1
-
-        user_exist = -1
-        for user in self.group_roll_users:
-            if ctx.user.id == user:
-                user_exist = 1
-                
-        if user_exist == 1:
-            result = "Ты уже участвуешь в групповой крутке! Список участников: "
-        else:
-            self.group_roll_users.append(ctx.user.id)
-            result = "Новый участник групповой крутки! Список участников: "
-        
-        self.group_roll_index += 1
-        win_sign = self.group_roll_factor[self.group_roll_index]
-        
-        for user in self.group_roll_users:
-            result += f"{name(user)}"
-            if user == self.group_roll_users[len(self.group_roll_users) - 1]:
-                result += "."
+        try: # Начало безопасного блока
+            if len(self.group_roll_users) == 0:
+                random.shuffle(self.group_roll_factor)
+                self.group_roll_index = -1
+    
+            user_exist = -1
+            for user in self.group_roll_users:
+                if ctx.user.id == user:
+                    user_exist = 1
+                    
+            if user_exist == 1:
+                result = "Ты уже участвуешь в групповой крутке! Список участников: "
             else:
-                result += ", "
+                self.group_roll_users.append(ctx.user.id)
+                result = "Новый участник групповой крутки! Список участников: "
             
-            user_pts = get_rolls_db().points_get(ctx.guild.id, user)
-            pts_to_add = win_sign * user_pts
-            get_rolls_db().points_add(ctx.guild.id, user, pts_to_add)
+            self.group_roll_index += 1
+            win_sign = self.group_roll_factor[self.group_roll_index]
             
-        if win_sign == 1:
-            result += "Выигрывают! Сердечки всех участников удвоены!"
-        else:
-            result += "Проиграли! На счету каждого участника 0 сердечек. Групповая крутка закончена."
-            self.group_roll_users.clear()
-
-        await ctx.followup.send(result)
+            for user in self.group_roll_users:
+                result += f"{name(user)}"
+                if user == self.group_roll_users[len(self.group_roll_users) - 1]:
+                    result += "."
+                else:
+                    result += ", "
+                
+                user_pts = get_rolls_db().points_get(ctx.guild.id, user)
+                pts_to_add = win_sign * user_pts
+                get_rolls_db().points_add(ctx.guild.id, user, pts_to_add)
+                
+            if win_sign == 1:
+                result += "Выигрывают! Сердечки всех участников удвоены!"
+            else:
+                result += "Проиграли! На счету каждого участника 0 сердечек. Групповая крутка закончена."
+                self.group_roll_users.clear()
+    
+            await ctx.followup.send(result)
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
             
     @app_commands.command(name='крутить',
                           description='Рулетка сердечек')
