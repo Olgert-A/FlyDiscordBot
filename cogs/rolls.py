@@ -51,6 +51,76 @@ class RollsCog(commands.Cog):
         self.mine_factor = [1, 1, 1, 1, 1, 1, 1, 1, 1, -1]
         self.mine_shots = set()
         self.mine_roll_task: asyncio.Task = None
+        self.risk_chances = [(90, 1.5), (80, 2), (70, 2.5), (60, 3), (50, 4)]
+        self.risk_users: dict[int, int] = {}
+        self.risk_tasks: dict[int, asyncio.Task | None] = {}
+
+    async def finish_user_risk_streak(self, user_id: int):
+        try:
+            # Ожидание 1 час (3600 секунд)
+            await asyncio.sleep(10)
+
+            current_task = asyncio.current_task()
+            task = self.risk_tasks.get(user_id)
+            if task:
+                if task != current_task:
+                    return
+
+                self.risk_users[user_id] = -1
+                self.risk_tasks[user_id] = None
+
+        except asyncio.CancelledError:
+            # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
+            # Просто игнорируем, позволяя задаче тихо перезапуститься.
+            pass
+    
+    @app_commands.command(name='риск', description='All in. С каждой круткой шанс ниже, выигрыш больше')
+    async def risk(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+
+        if ctx.user.id not in self.risk_users:
+            self.risk_users[ctx.user.id] = -1
+
+        if ctx.user.id not in self.risk_tasks:
+            self.risk_tasks[ctx.user.id] = None 
+
+        user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+
+        if self.risk_tasks[ctx.user.id] and not self.risk_tasks[ctx.user.id].done():
+            self.risk_tasks[ctx.user.id].cancel()  # 2. Отменяем задачу
+            
+        # 3. Очищаем переменную в любом случае (даже если задача была завершена)
+        self.risk_tasks[ctx.user.id] = None
+
+        if user_pts == 0:
+            self.risk_users[ctx.user.id] = -1
+            await ctx.followup.send("Ты не можешь ставить 0 сердечек. Твои шансы сброшены на первоначальные. Попробуй, когда накопишь больше 0.")
+            return
+
+        current_user_risk_index = self.risk_users[ctx.user.id]
+        if current_user_risk_index < len(self.risk_chances) - 1:
+            current_user_risk_index += 1
+            self.risk_users[ctx.user.id] = current_user_risk_index
+
+        chance, win_koef = self.risk_chances[current_user_risk_index]
+        chance = chance // 10
+        risk_win_condition = [1] * chance
+        risk_win_condition.extend([-1] * (10 - chance))
+        random.shuffle(risk_win_condition)
+        win_sign = risk_win_condition[0]
+        
+        pts_to_add = int(win_sign * user_pts * win_koef) - user_pts if win_sign > 0 else -user_pts
+        get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
+        result = f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
+        if win_sign > 0:
+            result += f" и выиграл {pts_to_add} сердечек!"
+            self.risk_tasks[ctx.user.id] = asyncio.create_task(self.finish_user_risk_streak(ctx.user.id))    
+        else:
+            result += " и проиграл все сердечки!"
+            self.risk_users[ctx.user.id] = -1
+
+        await ctx.followup.send(result)
+    
 
     async def finish_mine_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
