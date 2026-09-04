@@ -58,7 +58,7 @@ class RollsCog(commands.Cog):
     async def finish_user_risk_streak(self, user_id: int):
         try:
             # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
 
             current_task = asyncio.current_task()
             task = self.risk_tasks.get(user_id)
