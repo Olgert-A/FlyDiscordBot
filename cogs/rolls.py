@@ -195,7 +195,7 @@ class RollsCog(commands.Cog):
         if self.mine_factor[mine_position] == 1:            
             self.mine_users.append((ctx.user, ctx.user.id, current_user_pts))
             self.mine_roll_task = asyncio.create_task(self.finish_mine_roll(ctx.guild.id, ctx.channel))    
-            await ctx.followup.send(f"{name(ctx.user)} успешно поставил {current_user_pts} сердечек на выигрышное поле №{mine_position}. Через час казик будет завершён.")
+            await ctx.followup.send(f"{name(ctx.user)} успешно поставил {current_user_pts} сердечек на выигрышное поле №{mine_position}. Сердечки зачислятся на счёт через час, когда казик будет завершён.")
             return
         else:
             get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -current_user_pts)
