@@ -83,7 +83,7 @@ class RollsCog(commands.Cog):
             # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
             # Просто игнорируем, позволяя задаче тихо перезапуститься.
             pass
-    
+  
     @app_commands.command(name='казик', description='Просто поставь на поле')
     @app_commands.rename(mine_position='номер-поля')
     @app_commands.describe(mine_position='Выбери поле от 0 до 9 для all in')
@@ -112,7 +112,8 @@ class RollsCog(commands.Cog):
             return
 
         if len(self.mine_users) == 0:
-            random.shuffle(self.mine_factor)
+            pass
+            #random.shuffle(self.mine_factor)
 
         if self.mine_roll_task and not self.mine_roll_task.done():
             self.mine_roll_task.cancel()  # 2. Отменяем задачу
