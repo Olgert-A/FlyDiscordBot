@@ -2,6 +2,7 @@ import logging
 import datetime
 import discord
 import random
+import asyncio
 from discord import app_commands
 from discord.ext import commands
 from db.current import get_rolls_db
@@ -44,6 +45,7 @@ class RollsCog(commands.Cog):
         self.group_roll_users = []
         self.group_roll_factor = [1, 1, 1, 1, 1, 1, 1, 1, 1, -1]
         self.group_roll_index = -1
+        self.roulette_task: asyncio.Task = None
    
     def get_win_sign(self):
         self.factor_index += 1
@@ -137,6 +139,30 @@ class RollsCog(commands.Cog):
         random.shuffle(lose_texts)      
         await ctx.followup.send(f"{name(ctx.user)} признался в том, что он хуесос и {win_texts[0] if win_sign == 1 else lose_texts[0]}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
 
+    def cancel_roulette_task(self):
+        # 1. Проверяем, что задача существует и ещё выполняется
+        if self.roulette_task and not self.roulette_task.done():
+            self.roulette_task.cancel()  # 2. Отменяем задачу
+            
+        # 3. Очищаем переменную в любом случае (даже если задача была завершена)
+        self.roulette_task = None
+    
+    async def finish_group_roll(self, channel: discord.abc.Messageable):
+        try:
+            # Ожидание 1 час (3600 секунд)
+            await asyncio.sleep(60)
+
+            self.group_roll_users.clear()
+            self.roulette_task = None
+
+            # Отправляем сообщение в канал завершившейся рулетки
+            await channel.send("Час прошёл, голландский штурвал завершён безоговорочной победой всех участников!")
+
+        except asyncio.CancelledError:
+            # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
+            # Просто игнорируем, позволяя задаче тихо перезапуститься.
+            pass
+    
     @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
     async def group_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
@@ -152,34 +178,40 @@ class RollsCog(commands.Cog):
                     user_exist = 1
                     
             if user_exist == 1:
-                result = "Ты уже участвуешь в групповой крутке! Список участников: "
-            else:
-                self.group_roll_users.append((ctx.user, ctx.user.id))
-                result = "Новый участник групповой крутки! Список участников: "
+                await ctx.followup.send("Ты уже участвуешь в голландском штурвале! Следующая крутка будет запущена только с добавлением нового участника!")
+                return
+
+            self.cancel_roulette_task()
+
+            self.group_roll_users.append((ctx.user, ctx.user.id))
+            result = "Новый участник голландского штурвала! Через час голландский штурвал будет автоматически завершен с сохранением всех сердечек. "
             
             self.group_roll_index += 1
             win_sign = self.group_roll_factor[self.group_roll_index]
 
+            if win_sign == 1:
+                result += "Результат крутки - победа! "
+            else:
+                result += "Результат крутки - поражение! "
+            
             _, last_id = self.group_roll_users[len(self.group_roll_users) - 1]
             
             for user, id in self.group_roll_users:
-                result += f"{name(user)}"
-                
-                if id == last_id:
-                    result += "."
-                else:
-                    result += ", "
-                
                 user_pts = get_rolls_db().points_get(ctx.guild.id, id)
                 pts_to_add = win_sign * user_pts
                 get_rolls_db().points_add(ctx.guild.id, id, pts_to_add)
+                result += f"{name(user)} {pts_to_add} сердечек"
+                if id == last_id:
+                    result += ". "
+                else:
+                    result += ", "
                 
             if win_sign == 1:
-                result += "Выигрывают! Сердечки всех участников удвоены!"
+                self.roulette_task = asyncio.create_task(self.finish_group_roll(ctx.channel))    
             else:
-                result += "Проиграли! На счету каждого участника 0 сердечек. Групповая крутка закончена."
                 self.group_roll_users.clear()
-    
+                result += "Голландский штурвал закончился поражением."
+            
             await ctx.followup.send(result)
         except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
             import traceback
