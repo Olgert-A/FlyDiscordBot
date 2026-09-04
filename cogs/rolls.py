@@ -150,11 +150,12 @@ class RollsCog(commands.Cog):
     
     async def finish_group_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
-            current_task = asyncio.current_task()
+            
             
             # Ожидание 1 час (3600 секунд)
             await asyncio.sleep(60)
 
+            current_task = asyncio.current_task()
             if self.roulette_task != current_task:
                 return
 
