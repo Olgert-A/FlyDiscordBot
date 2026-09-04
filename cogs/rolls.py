@@ -42,6 +42,7 @@ class RollsCog(commands.Cog):
         self.factor_index = 6
         self.huesos_factor  = [-1, -1, 1, 1, 1, 1]
         self.huesos_index = 6
+        self.group_roll_user_win_pts = []
         self.group_roll_users = []
         self.group_roll_factor = [1, 1, 1, 1, 1, 1, 1, 1, 1, -1]
         self.group_roll_index = -1
@@ -147,16 +148,47 @@ class RollsCog(commands.Cog):
         # 3. Очищаем переменную в любом случае (даже если задача была завершена)
         self.roulette_task = None
     
-    async def finish_group_roll(self, channel: discord.abc.Messageable):
+    async def finish_group_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
+            current_task = asyncio.current_task()
+            
             # Ожидание 1 час (3600 секунд)
             await asyncio.sleep(60)
 
+            if self.roulette_task != current_task:
+                return
+
+            result = ""
+            
+            if len(self.group_roll_users) == 1:
+                _, id = self.group_roll_users[0]
+                user_pts = get_rolls_db().points_get(guild_id, id)
+                pts_to_minus = self.group_roll_user_win_pts[0]
+                pts_to_minus = pts_to_minus if pts_to_minus < user_pts else user_pts
+                get_rolls_db().points_add(guild_id, id, -pts_to_minus)
+                result += "Час прошёл. В голландском штурвале может участвовать от 2 человек. Выигранные сердечки обнулены."
+            elif len(self.group_roll_users) == 2:
+                _, first_id = self.group_roll_users[0]
+                first_user_pts = get_rolls_db().points_get(guild_id, first_id)
+                pts_to_minus = self.group_roll_user_win_pts[0] // 2
+                pts_to_minus = pts_to_minus if pts_to_minus < first_user_pts else first_user_pts
+                get_rolls_db().points_add(guild_id, first_id, -pts_to_minus)
+
+                _, second_id = self.group_roll_users[1]
+                second_user_pts = get_rolls_db().points_get(guild_id, second_id)
+                pts_to_minus = self.group_roll_user_win_pts[1] // 2
+                pts_to_minus = pts_to_minus if pts_to_minus < second_user_pts else second_user_pts
+                get_rolls_db().points_add(guild_id, second_id, -pts_to_minus)
+                result += "Час прошёл. Два участника могут получить только половину выигрыша (чтобы вы, пидоры, не абузили). Часть выигранных сердечек вычтена."
+            else:
+                result += "Час прошёл. Голландский штурвал завершён безоговорочной победой всех участников!"
+                
             self.group_roll_users.clear()
+            self.group_roll_user_win_pts.clear()
             self.roulette_task = None
 
             # Отправляем сообщение в канал завершившейся рулетки
-            await channel.send("Час прошёл, голландский штурвал завершён безоговорочной победой всех участников!")
+            await channel.send(result)
 
         except asyncio.CancelledError:
             # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
@@ -184,6 +216,7 @@ class RollsCog(commands.Cog):
             self.cancel_roulette_task()
 
             self.group_roll_users.append((ctx.user, ctx.user.id))
+            self.group_roll_user_win_pts.append(0)
             result = "Новый участник голландского штурвала! Через час голландский штурвал будет автоматически завершен с сохранением всех сердечек. "
             
             self.group_roll_index += 1
@@ -193,23 +226,27 @@ class RollsCog(commands.Cog):
                 result += "Результат крутки - победа! "
             else:
                 result += "Результат крутки - поражение! "
-            
+
+            result += "Участники: "
             _, last_id = self.group_roll_users[len(self.group_roll_users) - 1]
-            
-            for user, id in self.group_roll_users:
+
+          
+            for index, (user, id) in enumerate(self.group_roll_users):
                 user_pts = get_rolls_db().points_get(ctx.guild.id, id)
                 pts_to_add = win_sign * user_pts
+                self.group_roll_user_win_pts[index] += pts_to_add
                 get_rolls_db().points_add(ctx.guild.id, id, pts_to_add)
                 result += f"{name(user)} {pts_to_add} сердечек"
                 if id == last_id:
                     result += ". "
                 else:
-                    result += ", "
+                    result += " | "
                 
             if win_sign == 1:
-                self.roulette_task = asyncio.create_task(self.finish_group_roll(ctx.channel))    
+                self.roulette_task = asyncio.create_task(self.finish_group_roll(ctx.guild.id, ctx.channel))    
             else:
                 self.group_roll_users.clear()
+                self.group_roll_user_win_pts.clear()
                 result += "Голландский штурвал закончился поражением."
             
             await ctx.followup.send(result)
