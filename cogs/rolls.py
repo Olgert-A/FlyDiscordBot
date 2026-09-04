@@ -51,14 +51,14 @@ class RollsCog(commands.Cog):
         self.mine_factor = [1, 1, 1, 1, 1, 1, 1, 1, 1, -1]
         self.mine_shots = set()
         self.mine_roll_task: asyncio.Task = None
-        self.risk_chances = [(90, 1.5), (80, 2), (70, 2.5), (60, 3), (50, 4)]
+        self.risk_chances = [(90, 2), (80, 3), (70, 4), (60, 5), (50, 6)]
         self.risk_users: dict[int, int] = {}
         self.risk_tasks: dict[int, asyncio.Task | None] = {}
 
     async def finish_user_risk_streak(self, user_id: int):
         try:
             # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(30)
+            await asyncio.sleep(3600)
 
             current_task = asyncio.current_task()
             task = self.risk_tasks.get(user_id)
@@ -106,21 +106,17 @@ class RollsCog(commands.Cog):
         chance = chance // 10
         risk_win_condition = [1] * chance
         risk_win_condition.extend([-1] * (10 - chance))
-        result = ", ".join([str(n) for n in risk_win_condition])
-        result += "   "
         random.shuffle(risk_win_condition)
-        result = ", ".join([str(n) for n in risk_win_condition])
-        result += "   "
         win_sign = risk_win_condition[0]
         
         pts_to_add = int(win_sign * user_pts * win_koef) - user_pts if win_sign > 0 else -user_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        result += f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
+        result = f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
         if win_sign > 0:
             result += f" и выиграл {pts_to_add} сердечек!"
             self.risk_tasks[ctx.user.id] = asyncio.create_task(self.finish_user_risk_streak(ctx.user.id))    
         else:
-            result += " и проиграл все сердечки!"
+            result += f" и проиграл все {user_pts} сердечек!"
             self.risk_users[ctx.user.id] = -1
 
         await ctx.followup.send(result)
