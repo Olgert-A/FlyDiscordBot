@@ -106,12 +106,16 @@ class RollsCog(commands.Cog):
         chance = chance // 10
         risk_win_condition = [1] * chance
         risk_win_condition.extend([-1] * (10 - chance))
+        result = ", ".join([str(n) for n in risk_win_condition])
+        result += "   "
         random.shuffle(risk_win_condition)
+        result = ", ".join([str(n) for n in risk_win_condition])
+        result += "   "
         win_sign = risk_win_condition[0]
         
         pts_to_add = int(win_sign * user_pts * win_koef) - user_pts if win_sign > 0 else -user_pts
         get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        result = f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
+        result += f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
         if win_sign > 0:
             result += f" и выиграл {pts_to_add} сердечек!"
             self.risk_tasks[ctx.user.id] = asyncio.create_task(self.finish_user_risk_streak(ctx.user.id))    
