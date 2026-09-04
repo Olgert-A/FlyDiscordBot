@@ -85,7 +85,7 @@ class RollsCog(commands.Cog):
             pass
     
     @app_commands.command(name='казик', description='Просто поставь на поле')
-    @app_commands.rename(mine_position='Номер-поля')
+    @app_commands.rename(mine_position='номер-поля')
     @app_commands.describe(mine_position='Выбери поле от 0 до 9 для all in')
     async def miner_roll(self, ctx: discord.Interaction, mine_position: int):
         await ctx.response.defer()
