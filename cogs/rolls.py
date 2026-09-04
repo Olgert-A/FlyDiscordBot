@@ -202,7 +202,7 @@ class RollsCog(commands.Cog):
             if len(self.group_roll_users) == 0:
                 self.group_roll_factor = [1, 1]
                 roll_factor = [1, 1, 1, 1, 1, 1, 1, -1]
-                random.shuffle(self.roll_factor)
+                random.shuffle(roll_factor)
                 self.group_roll_factor.extend(roll_factor)
                 self.group_roll_index = -1
     
