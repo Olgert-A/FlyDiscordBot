@@ -150,10 +150,8 @@ class RollsCog(commands.Cog):
     
     async def finish_group_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
-            
-            
             # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(60)
+            await asyncio.sleep(3600)
 
             current_task = asyncio.current_task()
             if self.roulette_task != current_task:
@@ -202,7 +200,10 @@ class RollsCog(commands.Cog):
 
         try: # Начало безопасного блока
             if len(self.group_roll_users) == 0:
-                random.shuffle(self.group_roll_factor)
+                self.group_roll_factor = [1, 1]
+                roll_factor = [1, 1, 1, 1, 1, 1, 1, -1]
+                random.shuffle(self.roll_factor)
+                self.group_roll_factor.extend(roll_factor)
                 self.group_roll_index = -1
     
             user_exist = -1
@@ -218,13 +219,17 @@ class RollsCog(commands.Cog):
 
             self.group_roll_users.append((ctx.user, ctx.user.id))
             self.group_roll_user_win_pts.append(0)
-            result = "Новый участник голландского штурвала! Через час голландский штурвал будет автоматически завершен с сохранением всех сердечек. "
+
+            if len(self.group_roll_users) == 1:
+                result = "Голландский штурвал начат! "
+            else:        
+                result = "Новый участник голландского штурвала! "
             
             self.group_roll_index += 1
             win_sign = self.group_roll_factor[self.group_roll_index]
 
             if win_sign == 1:
-                result += "Результат крутки - победа! "
+                result += "Результат крутки - победа! Через час голландский штурвал будет автоматически завершен с сохранением всех сердечек."
             else:
                 result += "Результат крутки - поражение! "
 
@@ -237,7 +242,12 @@ class RollsCog(commands.Cog):
                 pts_to_add = win_sign * user_pts
                 self.group_roll_user_win_pts[index] += pts_to_add
                 get_rolls_db().points_add(ctx.guild.id, id, pts_to_add)
-                result += f"{name(user)} {pts_to_add} сердечек"
+                result += f"{name(user)} "
+                if pts_to_add >= 0:
+                    result += f"+{pts_to_add} сердечек"
+                else:
+                    result += f"{pts_to_add} сердечек"
+                    
                 if id == last_id:
                     result += ". "
                 else:
