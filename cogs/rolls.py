@@ -55,7 +55,7 @@ class RollsCog(commands.Cog):
     async def finish_mine_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
             # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(60)
+            await asyncio.sleep(3600)
 
             current_task = asyncio.current_task()
             if self.mine_roll_task != current_task:
@@ -112,8 +112,7 @@ class RollsCog(commands.Cog):
             return
 
         if len(self.mine_users) == 0:
-            pass
-            #random.shuffle(self.mine_factor)
+            random.shuffle(self.mine_factor)
 
         if self.mine_roll_task and not self.mine_roll_task.done():
             self.mine_roll_task.cancel()  # 2. Отменяем задачу
