@@ -23,7 +23,7 @@ def check_server_id_permission():
     def predicate(interaction: discord.Interaction) -> bool:
         return interaction.guild.id == 780923811264200754
 
-    return app_comands.check(predicate)
+    return app_commands.check(predicate)
 
 roll_cooldown = app_commands.checks.Cooldown(1, 60)
 duel_cooldown = app_commands.checks.Cooldown(1, 60)
