@@ -74,6 +74,13 @@ class RollsCog(commands.Cog):
             # Просто игнорируем, позволяя задаче тихо перезапуститься.
             pass
     
+    @app_commands.command(name='сервер', description='Узнать id сервера')
+    @check_bot_author_permission()
+    async def server_id(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        await ctx.followup.send(f{ctx.guild.id})
+        
+        
     @app_commands.command(name='риск', description='All in. С каждой круткой шанс ниже, выигрыш больше')
     async def risk(self, ctx: discord.Interaction):
         await ctx.response.defer()
