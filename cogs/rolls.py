@@ -19,6 +19,11 @@ def check_bot_author_permission():
 
     return app_commands.check(predicate)
 
+def check_server_id_permission():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.guild.id == 780923811264200754
+
+    return app_comands.check(predicate)
 
 roll_cooldown = app_commands.checks.Cooldown(1, 60)
 duel_cooldown = app_commands.checks.Cooldown(1, 60)
@@ -82,6 +87,7 @@ class RollsCog(commands.Cog):
         
         
     @app_commands.command(name='риск', description='All in. С каждой круткой шанс ниже, выигрыш больше')
+    @check_server_id_permission()
     async def risk(self, ctx: discord.Interaction):
         await ctx.response.defer()
 
@@ -164,6 +170,7 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='казик', description='Просто поставь на поле')
     @app_commands.rename(mine_position='номер-поля')
     @app_commands.describe(mine_position='Выбери поле от 0 до 9 для all in')
+    @check_server_id_permission()
     async def miner_roll(self, ctx: discord.Interaction, mine_position: int):
         await ctx.response.defer()
     
@@ -315,6 +322,7 @@ class RollsCog(commands.Cog):
         await ctx.followup.send(f'{name(target)} получает сердечки в количестве {points}!')
 
     @app_commands.command(name='я_хуесос', description='Рулетка всех сердечек с повышенным шансом выигрыша')
+    @check_server_id_permission()
     async def huesos_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
         user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
@@ -382,6 +390,7 @@ class RollsCog(commands.Cog):
             pass
     
     @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
+    @check_server_id_permission()
     async def group_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
 
