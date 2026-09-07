@@ -97,50 +97,58 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='риск', description='All in. С каждой круткой шанс ниже, выигрыш больше')
     @check_server_id_permission()
     async def risk(self, ctx: discord.Interaction):
-        await ctx.response.defer()
+        try:
+            await ctx.response.defer()
 
-        if ctx.user.id not in self.risk_users:
-            self.risk_users[ctx.user.id] = -1
-
-        if ctx.user.id not in self.risk_tasks:
-            self.risk_tasks[ctx.user.id] = None 
-
-        user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-
-        if self.risk_tasks[ctx.user.id] and not self.risk_tasks[ctx.user.id].done():
-            self.risk_tasks[ctx.user.id].cancel()  # 2. Отменяем задачу
+            if ctx.user.id not in self.risk_users:
+                self.risk_users[ctx.user.id] = -1
+    
+            if ctx.user.id not in self.risk_tasks:
+                self.risk_tasks[ctx.user.id] = None 
+    
+            user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+    
+            if self.risk_tasks[ctx.user.id] and not self.risk_tasks[ctx.user.id].done():
+                self.risk_tasks[ctx.user.id].cancel()  # 2. Отменяем задачу
+                
+            # 3. Очищаем переменную в любом случае (даже если задача была завершена)
+            self.risk_tasks[ctx.user.id] = None
+    
+            if user_pts == 0:
+                self.risk_users[ctx.user.id] = -1
+                await ctx.followup.send("Ты не можешь ставить 0 сердечек. Твои шансы сброшены на первоначальные. Попробуй, когда накопишь больше 0.")
+                return
+    
+            current_user_risk_index = self.risk_users[ctx.user.id]
+            if current_user_risk_index < len(self.risk_chances) - 1:
+                current_user_risk_index += 1
+                self.risk_users[ctx.user.id] = current_user_risk_index
+    
+            chance, win_koef = self.risk_chances[current_user_risk_index]
+            chance = chance // 10
+            risk_win_condition = [1] * chance
+            risk_win_condition.extend([-1] * (10 - chance))
+            random.shuffle(risk_win_condition)
+            win_sign = risk_win_condition[0]
             
-        # 3. Очищаем переменную в любом случае (даже если задача была завершена)
-        self.risk_tasks[ctx.user.id] = None
+            pts_to_add = int(win_sign * user_pts * win_koef) - user_pts if win_sign > 0 else -user_pts
+            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
+            result = f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
+            if win_sign > 0:
+                result += f" и выиграл {pts_to_add} сердечек!"
+                self.risk_tasks[ctx.user.id] = asyncio.create_task(self.finish_user_risk_streak(ctx.user.id))    
+            else:
+                result += f" и проиграл все {user_pts} сердечек!"
+                self.risk_users[ctx.user.id] = -1
+    
+            await ctx.followup.send(result)
 
-        if user_pts == 0:
-            self.risk_users[ctx.user.id] = -1
-            await ctx.followup.send("Ты не можешь ставить 0 сердечек. Твои шансы сброшены на первоначальные. Попробуй, когда накопишь больше 0.")
-            return
-
-        current_user_risk_index = self.risk_users[ctx.user.id]
-        if current_user_risk_index < len(self.risk_chances) - 1:
-            current_user_risk_index += 1
-            self.risk_users[ctx.user.id] = current_user_risk_index
-
-        chance, win_koef = self.risk_chances[current_user_risk_index]
-        chance = chance // 10
-        risk_win_condition = [1] * chance
-        risk_win_condition.extend([-1] * (10 - chance))
-        random.shuffle(risk_win_condition)
-        win_sign = risk_win_condition[0]
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
+            
         
-        pts_to_add = int(win_sign * user_pts * win_koef) - user_pts if win_sign > 0 else -user_pts
-        get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        result = f"{name(ctx.user)} поставил {user_pts} сердечек с шансом {chance * 10}%, коэффициентом {win_koef}"
-        if win_sign > 0:
-            result += f" и выиграл {pts_to_add} сердечек!"
-            self.risk_tasks[ctx.user.id] = asyncio.create_task(self.finish_user_risk_streak(ctx.user.id))    
-        else:
-            result += f" и проиграл все {user_pts} сердечек!"
-            self.risk_users[ctx.user.id] = -1
-
-        await ctx.followup.send(result)
     
 
     async def finish_mine_roll(self, guild_id: int, channel: discord.abc.Messageable):
@@ -180,75 +188,81 @@ class RollsCog(commands.Cog):
     @app_commands.describe(mine_position='Выбери поле от 0 до 9 для all in')
     @check_server_id_permission()
     async def miner_roll(self, ctx: discord.Interaction, mine_position: int):
-        await ctx.response.defer()
+        try:
+            await ctx.response.defer()
+        
+            current_user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
     
-        current_user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-
-        if any(id == ctx.user.id for _, id, _ in self.mine_users):
-            await ctx.followup.send("Ты уже сделал ставку в этом казике! Ожидай хода других игроков.")
-            return
-
-        if current_user_pts == 0:
-            await ctx.followup.send("У тебя нет сердечек, чтобы участвовать в казике. Лох")
-            return
-        
-        if mine_position < 0 or mine_position >= len(self.mine_factor):
-            result = f"Номер поля должен быть от 0 до {len(self.mine_factor) - 1}"
-            if len(self.mine_shots) > 0:
-                result += f" Проверенные поля: {', '.join([str(n) for n in self.mine_shots])}"
-            await ctx.followup.send(result)
-            return 
-
-        if mine_position in self.mine_shots:
-            await ctx.followup.send(f"Данное поле уже проверено. Проверенные поля: {', '.join([str(n) for n in self.mine_shots])}")
-            return
-
-        if len(self.mine_users) == 0:
-            random.shuffle(self.mine_factor)
-
-        if self.mine_roll_task and not self.mine_roll_task.done():
-            self.mine_roll_task.cancel()  # 2. Отменяем задачу
+            if any(id == ctx.user.id for _, id, _ in self.mine_users):
+                await ctx.followup.send("Ты уже сделал ставку в этом казике! Ожидай хода других игроков.")
+                return
+    
+            if current_user_pts == 0:
+                await ctx.followup.send("У тебя нет сердечек, чтобы участвовать в казике. Лох")
+                return
             
-        # 3. Очищаем переменную в любом случае (даже если задача была завершена)
-        self.mine_roll_task = None
-        
-        self.mine_shots.add(mine_position)
-
-        if self.mine_factor[mine_position] == 1:            
-            self.mine_users.append((ctx.user, ctx.user.id, current_user_pts))
-            self.mine_roll_task = asyncio.create_task(self.finish_mine_roll(ctx.guild.id, ctx.channel))    
-            await ctx.followup.send(f"{name(ctx.user)} успешно поставил {current_user_pts} сердечек на выигрышное поле №{mine_position}. Сердечки зачислятся на счёт через час, когда казик будет завершён.")
-            return
-        else:
-            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -current_user_pts)
-            
+            if mine_position < 0 or mine_position >= len(self.mine_factor):
+                result = f"Номер поля должен быть от 0 до {len(self.mine_factor) - 1}"
+                if len(self.mine_shots) > 0:
+                    result += f" Проверенные поля: {', '.join([str(n) for n in self.mine_shots])}"
+                await ctx.followup.send(result)
+                return 
+    
+            if mine_position in self.mine_shots:
+                await ctx.followup.send(f"Данное поле уже проверено. Проверенные поля: {', '.join([str(n) for n in self.mine_shots])}")
+                return
+    
             if len(self.mine_users) == 0:
-                self.mine_shots.clear()
-                await ctx.followup.send(f"{name(ctx.user)} сразу нашёл поле с лузом. Его ставка в {current_user_pts} сгорела. Казик завершён.")
+                random.shuffle(self.mine_factor)
+    
+            if self.mine_roll_task and not self.mine_roll_task.done():
+                self.mine_roll_task.cancel()  # 2. Отменяем задачу
+                
+            # 3. Очищаем переменную в любом случае (даже если задача была завершена)
+            self.mine_roll_task = None
+            
+            self.mine_shots.add(mine_position)
+    
+            if self.mine_factor[mine_position] == 1:            
+                self.mine_users.append((ctx.user, ctx.user.id, current_user_pts))
+                self.mine_roll_task = asyncio.create_task(self.finish_mine_roll(ctx.guild.id, ctx.channel))    
+                await ctx.followup.send(f"{name(ctx.user)} успешно поставил {current_user_pts} сердечек на выигрышное поле №{mine_position}. Сердечки зачислятся на счёт через час, когда казик будет завершён.")
                 return
             else:
-                result = f"{name(ctx.user)} нашёл поле с лузом. Его ставка в {current_user_pts} пропорционально распределена между участниками. Казик завершён."
+                get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -current_user_pts)
                 
-                user_pts = [pts for user, id, pts in self.mine_users]
-                sum_user_pts = sum(user_pts)
-                user_win_part = [int(current_user_pts * pts / sum_user_pts) for pts in user_pts]
-    
-                self.mine_users = [
-                    (user, id, win_pts) for (user, id, pts), win_pts in zip(self.mine_users, user_win_part)
-                ]
-    
-                for user, id, win_pts in self.mine_users:
-                    get_rolls_db().points_add(ctx.guild.id, id, win_pts)
-    
-                result += " Распределение сердечек: "
-                result += " | ".join([f"{name(user)} +{win_pts} сердечек" for user, id, win_pts in self.mine_users])
-    
-                self.mine_users.clear()
-                self.mine_shots.clear()
-                await ctx.followup.send(result)
-                return
+                if len(self.mine_users) == 0:
+                    self.mine_shots.clear()
+                    await ctx.followup.send(f"{name(ctx.user)} сразу нашёл поле с лузом. Его ставка в {current_user_pts} сгорела. Казик завершён.")
+                    return
+                else:
+                    result = f"{name(ctx.user)} нашёл поле с лузом. Его ставка в {current_user_pts} пропорционально распределена между участниками. Казик завершён."
+                    
+                    user_pts = [pts for user, id, pts in self.mine_users]
+                    sum_user_pts = sum(user_pts)
+                    user_win_part = [int(current_user_pts * pts / sum_user_pts) for pts in user_pts]
         
-        await ctx.followup.send("Miner roll test")
+                    self.mine_users = [
+                        (user, id, win_pts) for (user, id, pts), win_pts in zip(self.mine_users, user_win_part)
+                    ]
+        
+                    for user, id, win_pts in self.mine_users:
+                        get_rolls_db().points_add(ctx.guild.id, id, win_pts)
+        
+                    result += " Распределение сердечек: "
+                    result += " | ".join([f"{name(user)} +{win_pts} сердечек" for user, id, win_pts in self.mine_users])
+        
+                    self.mine_users.clear()
+                    self.mine_shots.clear()
+                    await ctx.followup.send(result)
+                    return
+            
+            await ctx.followup.send("Miner roll test")
+            
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
     
     def get_win_sign(self):
         self.factor_index += 1
@@ -332,16 +346,21 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='я_хуесос', description='Рулетка всех сердечек с повышенным шансом выигрыша')
     @check_server_id_permission()
     async def huesos_roll(self, ctx: discord.Interaction):
-        await ctx.response.defer()
-        user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-        win_sign = self.get_huesos_sign()
-        pts_to_add = win_sign * user_pts
-        get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        win_texts = ["пожал плоды своей искренности", "на этот раз остался в плюсе", "cорвал баснословный куш для нищих", "достиг головокружительного успеха", "доказал, что если долго пресмыкаться, система выплюнет тебе кость", "выиграл ровно столько, чтобы на секунду забыть, какое он ничтожество", "облизал барский сапог, выпросив-таки свою подачку"]
-        lose_texts = ["позорно проебал", "доказал это очередным проигрышем", "остался попёрдывать лежа в канаве", "пустил свою жопу по миру", "продемонстрировал эталонный пример тотальной никчёмности", "остался смаковать привкус собственного поражения"]
-        random.shuffle(win_texts)
-        random.shuffle(lose_texts)      
-        await ctx.followup.send(f"{name(ctx.user)} признался в том, что он хуесос и {win_texts[0] if win_sign == 1 else lose_texts[0]}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
+        try:
+            await ctx.response.defer()
+            user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+            win_sign = self.get_huesos_sign()
+            pts_to_add = win_sign * user_pts
+            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
+            win_texts = ["пожал плоды своей искренности", "на этот раз остался в плюсе", "cорвал баснословный куш для нищих", "достиг головокружительного успеха", "доказал, что если долго пресмыкаться, система выплюнет тебе кость", "выиграл ровно столько, чтобы на секунду забыть, какое он ничтожество", "облизал барский сапог, выпросив-таки свою подачку"]
+            lose_texts = ["позорно проебал", "доказал это очередным проигрышем", "остался попёрдывать лежа в канаве", "пустил свою жопу по миру", "продемонстрировал эталонный пример тотальной никчёмности", "остался смаковать привкус собственного поражения"]
+            random.shuffle(win_texts)
+            random.shuffle(lose_texts)      
+            await ctx.followup.send(f"{name(ctx.user)} признался в том, что он хуесос и {win_texts[0] if win_sign == 1 else lose_texts[0]}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
 
     def cancel_roulette_task(self):
         # 1. Проверяем, что задача существует и ещё выполняется
@@ -476,37 +495,42 @@ class RollsCog(commands.Cog):
     @app_commands.rename(pts_arg='сердечки')
     @app_commands.describe(pts_arg='Сколько крутим')
     async def roll(self, ctx: discord.Interaction, pts_arg: str = "100%"):
-        await ctx.response.defer()
-        parsed_pts = RollParser.parse(pts_arg)
-        if not parsed_pts:
-            await ctx.followup.send(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
-            #app_commands.Cooldown.reset(roll_cooldown)
-            return
-
-        user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
-
-        factor, roll_type = parsed_pts
-        logging.info(parsed_pts)
-
-        if roll_type == RollTypes.POINTS:
-            roll_pts = factor
-
-        if roll_type == RollTypes.PERCENT:
-            roll_pts = int(user_pts * factor)
-
-        if roll_type == RollTypes.ALL:
-            roll_pts = user_pts
-
-        if roll_pts > user_pts or user_pts <= 0:
-            await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
-            #app_commands.Cooldown.reset(roll_cooldown)
-            return
-
-        #win_sign = #random.choice([2, 1, -1])
-        win_sign = self.get_win_sign() #1 if win_sign > 0 else -1
-        pts_to_add = win_sign * roll_pts
-        get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
-        await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
+        try:
+            await ctx.response.defer()
+            parsed_pts = RollParser.parse(pts_arg)
+            if not parsed_pts:
+                await ctx.followup.send(f"Укажи либо **all**, либо процент сердечек (например **50%**), либо четкое количество, которое хочешь крутить, дружок")
+                #app_commands.Cooldown.reset(roll_cooldown)
+                return
+    
+            user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+    
+            factor, roll_type = parsed_pts
+            logging.info(parsed_pts)
+    
+            if roll_type == RollTypes.POINTS:
+                roll_pts = factor
+    
+            if roll_type == RollTypes.PERCENT:
+                roll_pts = int(user_pts * factor)
+    
+            if roll_type == RollTypes.ALL:
+                roll_pts = user_pts
+    
+            if roll_pts > user_pts or user_pts <= 0:
+                await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
+                #app_commands.Cooldown.reset(roll_cooldown)
+                return
+    
+            #win_sign = #random.choice([2, 1, -1])
+            win_sign = self.get_win_sign() #1 if win_sign > 0 else -1
+            pts_to_add = win_sign * roll_pts
+            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, pts_to_add)
+            await ctx.followup.send(f"{name(ctx.user)} ставит {roll_pts} и {'выигрывает' if win_sign == 1 else 'проигрывает'}! Теперь на счету сердечек: {user_pts + pts_to_add}!")
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
 
     @app_commands.command(name='сердечки',
                           description='Узнай, сколько у тебя сердечек')
@@ -536,41 +560,46 @@ class RollsCog(commands.Cog):
     @app_commands.describe(points='Сколько сердечек хотим украсть')
     @app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id, i.user.id))
     async def duel(self, ctx: discord.Interaction, target: discord.Member, points: int):
-        await ctx.response.defer()
-        user = ctx.user
-
-        user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
-        target_points_check = self.check_points_exist(ctx.guild.id, target.id, points)
-
-        if points < 0:
-            await ctx.followup.send(f"Низя крутить меньше 0 сердечек")
-            #app_commands.Cooldown.reset(duel_cooldown)
-            return
-
-        if not user_points_check:
-            await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
-            #app_commands.Cooldown.reset(duel_cooldown)
-            return
-
-        if not target_points_check:
-            await ctx.followup.send(f"У твоей цели нету столько сердечек, дружок")
-            #app_commands.Cooldown.reset(duel_cooldown)
-            return
-
-        contract = self.is_contract_exist(user.id, target.id)
-        contract = get_rolls_db().duels_contract_find(user.id, target.id)
-        if contract:
-            await ctx.followup.send(f'Ты уже ждёшь дуэли со своей целью, дружок')
-            #app_commands.Cooldown.reset(duel_cooldown)
-            return
-
-        await ctx.followup.send(f"<@{target.id}>, с тобой хочет сразиться {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
-        message = await ctx.original_response()
-        await message.add_reaction('\N{THUMBS UP SIGN}')
-        await message.add_reaction('\N{THUMBS DOWN SIGN}')
-        logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
-        self.duels_add(message.id, user.id, target.id, points, datetime.datetime.now())
-        get_rolls_db().duels_contract_add(message.id, user.id, target.id, points, datetime.datetime.now())
+        try:
+            await ctx.response.defer()
+            user = ctx.user
+    
+            user_points_check = self.check_points_exist(ctx.guild.id, user.id, points)
+            target_points_check = self.check_points_exist(ctx.guild.id, target.id, points)
+    
+            if points < 0:
+                await ctx.followup.send(f"Низя крутить меньше 0 сердечек")
+                #app_commands.Cooldown.reset(duel_cooldown)
+                return
+    
+            if not user_points_check:
+                await ctx.followup.send(f"У тебя маловато сердечек на счету, дружок")
+                #app_commands.Cooldown.reset(duel_cooldown)
+                return
+    
+            if not target_points_check:
+                await ctx.followup.send(f"У твоей цели нету столько сердечек, дружок")
+                #app_commands.Cooldown.reset(duel_cooldown)
+                return
+    
+            contract = self.is_contract_exist(user.id, target.id)
+            contract = get_rolls_db().duels_contract_find(user.id, target.id)
+            if contract:
+                await ctx.followup.send(f'Ты уже ждёшь дуэли со своей целью, дружок')
+                #app_commands.Cooldown.reset(duel_cooldown)
+                return
+    
+            await ctx.followup.send(f"<@{target.id}>, с тобой хочет сразиться {name(user)} за твои сердечки. Ставка дуэли {points}. Жми реакцию, чтобы согласиться или отказаться")
+            message = await ctx.original_response()
+            await message.add_reaction('\N{THUMBS UP SIGN}')
+            await message.add_reaction('\N{THUMBS DOWN SIGN}')
+            logging.info(f'{message.id} - {datetime.datetime.now()} - {user.id} - {target.id} - {points}')
+            self.duels_add(message.id, user.id, target.id, points, datetime.datetime.now())
+            get_rolls_db().duels_contract_add(message.id, user.id, target.id, points, datetime.datetime.now())
+        except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
+            import traceback
+            error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
+            await ctx.followup.send(error_message)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
