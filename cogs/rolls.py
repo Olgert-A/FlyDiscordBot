@@ -84,6 +84,14 @@ class RollsCog(commands.Cog):
     async def get_setver_id(self, ctx: discord.Interaction):
         await ctx.response.defer()
         await ctx.followup.send(f"{ctx.guild.id}")
+
+    @app_commands.command(name='pointsupd', description='обновление размера хранения сердечек')
+    @check_bot_author_permission()
+    async def update_points_type(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        get_rolls_db().duels_points_update()
+        get_rolls_db().rolls_points_update()
+        await ctx.followup.send("Обновлено до BIGINT")
         
         
     @app_commands.command(name='риск', description='All in. С каждой круткой шанс ниже, выигрыш больше')
