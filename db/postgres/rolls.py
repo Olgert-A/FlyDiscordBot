@@ -48,6 +48,14 @@ class RollsDb(AbstractRollsDB):
                 timestamp TIMESTAMP
                 );""")
 
+    def duels_points_update(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""ALTER TABLE duels ALTER COLUMN points TYPE BIGINT;""")
+
+    def rolls_points_update(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""ALTER TABLE rolls ALTER COLUMN points TYPE BIGINT;""")
+
     def duels_drop(self):
         with psycopg.connect(self.DATABASE_URL) as c:
             c.execute("""DROP TABLE IF EXISTS duels;""")
