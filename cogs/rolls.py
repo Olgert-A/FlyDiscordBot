@@ -25,6 +25,12 @@ def check_server_id_permission():
 
     return app_commands.check(predicate)
 
+def check_channel_id_permission():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.channel.id == 780923811264200754
+
+    return app_commands.check(predicate)
+
 roll_cooldown = app_commands.checks.Cooldown(1, 60)
 duel_cooldown = app_commands.checks.Cooldown(1, 60)
 
@@ -79,11 +85,11 @@ class RollsCog(commands.Cog):
             # Просто игнорируем, позволяя задаче тихо перезапуститься.
             pass
     
-    @app_commands.command(name='сервер', description='Узнать id сервера')
+    @app_commands.command(name='канал', description='Узнать id канала')
     @check_bot_author_permission()
     async def get_setver_id(self, ctx: discord.Interaction):
         await ctx.response.defer()
-        await ctx.followup.send(f"{ctx.guild.id}")
+        await ctx.followup.send(f"{ctx.channel.id}")
 
     @app_commands.command(name='pointsupd', description='обновление размера хранения сердечек')
     @check_bot_author_permission()
@@ -369,11 +375,10 @@ class RollsCog(commands.Cog):
             
         # 3. Очищаем переменную в любом случае (даже если задача была завершена)
         self.roulette_task = None
-    
-    async def finish_group_roll(self, guild_id: int, channel: discord.abc.Messageable):
-        try:
-            # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(3600)
+
+    def temp_finish_group(self):
+        pass
+        '''await asyncio.sleep(3600)
 
             current_task = asyncio.current_task()
             if self.roulette_task != current_task:
@@ -409,20 +414,10 @@ class RollsCog(commands.Cog):
             self.roulette_task = None
 
             # Отправляем сообщение в канал завершившейся рулетки
-            await channel.send(result)
+            await channel.send(result)'''
 
-        except asyncio.CancelledError:
-            # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
-            # Просто игнорируем, позволяя задаче тихо перезапуститься.
-            pass
-    
-    @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
-    @check_server_id_permission()
-    async def group_roll(self, ctx: discord.Interaction):
-        await ctx.response.defer()
-
-        try: # Начало безопасного блока
-            if len(self.group_roll_users) == 0:
+            #а это старый штурвал
+            '''if len(self.group_roll_users) == 0:
                 self.group_roll_factor = [1, 1]
                 roll_factor = [1, 1, 1, 1, 1, 1, 1, -1]
                 random.shuffle(roll_factor)
@@ -482,7 +477,84 @@ class RollsCog(commands.Cog):
                 self.group_roll_users.clear()
                 self.group_roll_user_win_pts.clear()
             
-            await ctx.followup.send(result)
+            await ctx.followup.send(result)'''
+
+    async def cog_load(self):
+        asyncio.create_task(self.check_db_on_startup())
+
+    async def check_db_on_startup(self):
+        await self.bot.wait_until_ready()
+
+        try:
+            # Получаем текущий список участников из базы
+            grouproll_users = get_rolls_db().grouproll_get_users()
+            
+            # Если в базе кто-то есть, значит бот упал или перезапустился во время таймера
+            if len(grouproll_users) > 0:
+                self.roulette_task = asyncio.create_task(self.finish_group_roll())
+                    
+        except Exception as e:
+            print(f"[Ошибка] Не удалось возобновить штурвал при старте: {e}")
+    
+    async def finish_group_roll(self):
+        try:
+            # Ожидание 1 час (3600 секунд)
+            await asyncio.sleep(60)
+            current_task = asyncio.current_task()
+            if self.roulette_task != current_task:
+                return
+
+            grouproll_users = get_rolls_db().grouproll_get_users()
+            if len(grouproll_users) == 0:
+                return
+
+            channel = self.bot.get_channel(123456)
+            winner_choice = random_choice(grouproll_users)
+            winner_id = winner_choice[1]
+
+            win_points = sum(points for _id, user_id, points in grouproll_users)
+
+            winner = await self.bot.fetch_user(winner_id)
+            get_rolls_db().points_add(780923811264200754, winner_id, win_points)
+            get_rolls_db().clear_grouproll()
+            if channel:
+                await channel.send(f"""Голландский штурвал завершён безоговорочной победой {name(winner)}!""")
+              
+        except asyncio.CancelledError:
+            # Сюда код заходит, когда мы делаем self.roulette_task.cancel() при новом вызове команды.
+            # Просто игнорируем, позволяя задаче тихо перезапуститься.
+            pass
+    
+    @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
+    @check_server_id_permission()
+    @check_channel_id_permission()
+    async def group_roll(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+
+        try: # Начало безопасного блока
+            group_roll_users = get_rolls_db().grouproll_get_users()
+
+            for _id, user_id, points in group_roll_users:
+                if ctx.user.id == user_id:
+                    await ctx.followup.send(f"Ты уже участвуешь в голландском штурвале со своими {points} сердечками!")
+                    return
+
+            user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
+
+            if user_pts <= 0:
+                await ctx.followup.send("У тебя слишком маленький ||счёт сердечек|| для участия в групповом штурвале.")
+                return
+
+            if self.roulette_task and not self.roulette_task.done():
+                self.roulette_task.cancel() 
+            
+            self.roulette_task = None
+
+            get_rolls_db().grouproll_add_user(ctx.user.id, user_pts)
+            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -user_pts)
+            self.roulette_task = asyncio.create_task(self.finish_group_roll())
+            await ctx.followup.send(f"{name(ctx.user)} присоединился к групповому штурвалу со своими {user_pts} сердечками. Жди розыгрыш через 20 минут от этого сообщения.")
+                       
         except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
             import traceback
             error_message = f"❌ Произошла ошибка в коде:\n```python\n{traceback.format_exc()}\n```"
