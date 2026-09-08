@@ -27,7 +27,7 @@ def check_server_id_permission():
 
 def check_channel_id_permission():
     def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.channel.id == 780923811264200754
+        return interaction.channel.id == 822903067233878016
 
     return app_commands.check(predicate)
 
@@ -406,7 +406,7 @@ class RollsCog(commands.Cog):
             if len(grouproll_users) == 0:
                 return
 
-            channel = self.bot.get_channel(123456)
+            channel = self.bot.get_channel(822903067233878016)
             winner_choice = random_choice(grouproll_users)
             winner_id = winner_choice[1]
 
