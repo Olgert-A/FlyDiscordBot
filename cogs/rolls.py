@@ -378,11 +378,13 @@ class RollsCog(commands.Cog):
 
 
     async def cog_load(self):
+        logging.info("cog load")
         asyncio.create_task(self.check_db_on_startup())
 
     async def check_db_on_startup(self):
+        logging.info("check db")
         await self.bot.wait_until_ready()
-
+        logging.info("check end")
         try:
             # Получаем текущий список участников из базы
             grouproll_users = get_rolls_db().grouproll_get_users()
