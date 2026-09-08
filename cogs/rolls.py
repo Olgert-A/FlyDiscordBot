@@ -436,6 +436,7 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
     @check_server_id_permission()
     @check_channel_id_permission()
+    @check_bot_author_permission()
     async def group_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
 
