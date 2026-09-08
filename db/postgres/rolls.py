@@ -14,10 +14,11 @@ class RollsDb(AbstractRollsDB):
         self._guilds_create()
         self._rolls_create()
         self._duels_create()
+        self._grouproll_create()
 
     def _drop_tables(self):
         with psycopg.connect(self.DATABASE_URL) as c:
-            c.execute("""DROP TABLE IF EXISTS guilds, rolls, duels;""")
+            c.execute("""DROP TABLE IF EXISTS guilds, rolls, duels, grouproll;""")
 
     def _guilds_create(self):
         with psycopg.connect(self.DATABASE_URL) as c:
@@ -32,7 +33,7 @@ class RollsDb(AbstractRollsDB):
                 id SERIAL PRIMARY KEY, 
                 reg_id SERIAL,
                 user_id BIGINT NOT NULL,
-                points INTEGER,
+                points BIGINT,
                 FOREIGN KEY (reg_id) REFERENCES guilds (id) ON DELETE CASCADE,
                 UNIQUE(reg_id, user_id)
                 );""")
@@ -44,9 +45,31 @@ class RollsDb(AbstractRollsDB):
                 message_id BIGINT,
                 user_id BIGINT,
                 target_id BIGINT,
-                points INTEGER,
+                points BIGINT,
                 timestamp TIMESTAMP
                 );""")
+
+    def _grouproll_create(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""CREATE TABLE IF NOT EXISTS grouproll (
+                id SERIAL PRIMARY KEY,
+                user_id BIGINT UNIQUE,
+                points BIGINT);""")
+
+    def clear_grouproll(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""TRUNCATE TABLE grouproll;""")
+
+    def grouproll_add_user(self, user_id, points):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            c.execute("""INSERT INTO grouproll(user_id, points)
+            VALUES (%s, %s)
+            ON CONFLICT(user_id) DO NOTHING;""", (user_id, points))
+
+    def grouproll_get_users(self):
+        with psycopg.connect(self.DATABASE_URL) as c:
+            res = c.execute("""SELECT * FROM grouproll;""").fetchall()
+            return res
 
     def duels_points_update(self):
         with psycopg.connect(self.DATABASE_URL) as c:
