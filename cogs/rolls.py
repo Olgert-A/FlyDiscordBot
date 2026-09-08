@@ -396,13 +396,18 @@ class RollsCog(commands.Cog):
     
     async def finish_group_roll(self):
         try:
+            logging.info("start group roll finish")
+            
             # Ожидание 1 час (3600 секунд)
             await asyncio.sleep(60)
             current_task = asyncio.current_task()
             if self.roulette_task != current_task:
                 return
 
+            self.roulette_task = None
+
             grouproll_users = get_rolls_db().grouproll_get_users()
+            logging.info(f"{len(grouproll_users)}")
             if len(grouproll_users) == 0:
                 return
 
@@ -415,6 +420,9 @@ class RollsCog(commands.Cog):
             winner = await self.bot.fetch_user(winner_id)
             get_rolls_db().points_add(780923811264200754, winner_id, win_points)
             get_rolls_db().clear_grouproll()
+            grouproll_users = get_rolls_db().grouproll_get_users()
+            logging.info(f"{len(grouproll_users)}")
+            logging.info(f"{channel != None}")
             if channel:
                 await channel.send(f"""Голландский штурвал завершён безоговорочной победой {name(winner)}!""")
               
