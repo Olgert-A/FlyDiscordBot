@@ -448,7 +448,7 @@ class RollsCog(commands.Cog):
 
             logging.info(f"chanel get approved")
             
-            winner_choice = random_choice(grouproll_users)
+            winner_choice = random.choice(grouproll_users)
             winner_id = winner_choice[1]
 
             win_points = sum(points for _id, user_id, points in grouproll_users)
