@@ -88,16 +88,30 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='канал', description='Узнать id канала')
     @check_bot_author_permission()
     async def get_setver_id(self, ctx: discord.Interaction):
-        await ctx.response.defer()
+        await ctx.response.defer(ephemeral=True) # ephemeral=True, чтобы ответ видел только автор
+    
         try:
-            channel = await bot.fetch_channel(822903067233878016)
-            await ctx.followup.send("Канал успешно получен из API Discord!")
-            await channel.send("Кстати, Айваз котакбас!")
+            # Преобразуем ID из строки в число
+            id_num = 822903067233878016
             
+            # 2. Ищем канал (сначла в кэше, если нет — через API)
+            channel = bot.get_channel(id_num) or await bot.fetch_channel(id_num)
+            
+            # 3. Отправляем сообщение в тот самый закрытый канал
+            await channel.send(f"Сообщение из слэш-команды от {ctx.user.mention}")
+            
+            # 4. Отвечаем пользователю, который вызвал команду
+            await ctx.followup.send(f"✅ Успешно отправлено в канал {channel.mention}!")
+            
+        except ValueError:
+            await ctx.followup.send("❌ Неверный формат ID. Введите только цифры.")
         except discord.Forbidden:
-            await ctx.followup.send("У бота все-таки нет доступа к этому каналу.")
+            await ctx.followup.send("❌ У бота нет доступа (права View Channel) к этому каналу.")
         except discord.NotFound:
-            await ctx.followup.send("Канал с таким ID не существует.")
+            await ctx.followup.send("❌ Канал с таким ID не найден.")
+        except Exception as e:
+            await ctx.followup.send(f"❌ Произошла ошибка: {e}")
+        
 
     @app_commands.command(name='pointsupd', description='обновление размера хранения сердечек')
     @check_bot_author_permission()
