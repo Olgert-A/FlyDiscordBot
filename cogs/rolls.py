@@ -453,7 +453,12 @@ class RollsCog(commands.Cog):
 
             win_points = sum(points for _id, user_id, points in grouproll_users)
 
-            winner = self.bot.get_user(winner_id) or await self.bot.fetch_user(winner_id)
+            guild_id = 780923811264200754
+            guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
+            
+            # Получаем именно Member (участника сервера), у которого точно есть .nick
+            winner = guild.get_member(winner_id) or await guild.fetch_member(winner_id)
+
             logging.info(f"Юзер = {winner != None}")
             get_rolls_db().points_add(780923811264200754, winner_id, win_points)
             get_rolls_db().clear_grouproll()
