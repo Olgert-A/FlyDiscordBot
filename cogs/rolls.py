@@ -95,7 +95,7 @@ class RollsCog(commands.Cog):
             id_num = 822903067233878016
             
             # 2. Ищем канал (сначла в кэше, если нет — через API)
-            channel = bot.get_channel(id_num) or await bot.fetch_channel(id_num)
+            channel = self.bot.get_channel(id_num) or await self.bot.fetch_channel(id_num)
             
             # 3. Отправляем сообщение в тот самый закрытый канал
             await channel.send(f"Сообщение из слэш-команды от {ctx.user.mention}")
