@@ -484,10 +484,10 @@ class RollsCog(commands.Cog):
             result = f"{name(ctx.user)} присоединился к групповому штурвалу со своими {user_pts} сердечками. Участники: "
             
             grouproll_users = get_rolls_db().grouproll_get_users()
-            await ctx.guild.fetch_members()
             grouproll_members = []
+            
             for _id, user_id, points in grouproll_users:
-                member = ctx.guild.get_member(user_id)
+                member = ctx.guild.get_member(user_id) or await ctx.guild.fetch_member(user_id)
                 if member:
                     grouproll_members.append(member)
 
