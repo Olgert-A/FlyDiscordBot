@@ -428,25 +428,32 @@ class RollsCog(commands.Cog):
             if self.roulette_task != current_task:
                 return
 
+            logging.info("task approved")
+
             self.roulette_task = None
 
             grouproll_users = get_rolls_db().grouproll_get_users()
-            logging.info(f"{len(grouproll_users)}")
+            logging.info(f"group roll users: {len(grouproll_users)}")
             if len(grouproll_users) == 0:
                 return
 
-            channel = self.bot.fetch_channel(822903067233878016)
+            # Преобразуем ID из строки в число
+            id_num = 822903067233878016
+            
+            # 2. Ищем канал (сначла в кэше, если нет — через API)
+            channel = self.bot.get_channel(id_num) or await self.bot.fetch_channel(id_num)
+            
             winner_choice = random_choice(grouproll_users)
             winner_id = winner_choice[1]
 
             win_points = sum(points for _id, user_id, points in grouproll_users)
 
-            winner = await self.bot.fetch_user(winner_id)
+            winner = self.bot.get_user(winner_id) or await self.bot.fetch_user(winner_id)
+            logging.info(f"Юзер = {winner != None}")
             get_rolls_db().points_add(780923811264200754, winner_id, win_points)
             get_rolls_db().clear_grouproll()
             grouproll_users = get_rolls_db().grouproll_get_users()
-            logging.info(f"{len(grouproll_users)}")
-            logging.info(f"{channel != None}")
+            logging.info(f"Канал = {channel != None}")
             if channel:
                 await channel.send(f"""Голландский штурвал завершён безоговорочной победой {name(winner)}!""")
               
