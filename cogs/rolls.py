@@ -480,7 +480,21 @@ class RollsCog(commands.Cog):
             get_rolls_db().grouproll_add_user(ctx.user.id, user_pts)
             get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -user_pts)
             self.roulette_task = asyncio.create_task(self.finish_group_roll())
-            await ctx.followup.send(f"{name(ctx.user)} присоединился к групповому штурвалу со своими {user_pts} сердечками. Жди розыгрыш через 20 минут от этого сообщения.")
+
+            result = f"{name(ctx.user)} присоединился к групповому штурвалу со своими {user_pts} сердечками. Участники: "
+            
+            grouproll_users = get_rolls_db().grouproll_get_users()
+            await guild.fetch_members()
+            grouproll_members = []
+            for _id, user_id, points in grouproll_users:
+                member = guild.get_member(user_id)
+                if member:
+                    grouproll_members.append(member)
+
+            result += ", ".join(name(member) for member in grouproll_members)
+            result += ". Жди розыгрыш через 20 минут от этого сообщения."
+            
+            await ctx.followup.send(result)
                        
         except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
             import traceback
