@@ -429,6 +429,7 @@ class RollsCog(commands.Cog):
                 return
 
             logging.info("task approved")
+            pass
 
             self.roulette_task = None
 
