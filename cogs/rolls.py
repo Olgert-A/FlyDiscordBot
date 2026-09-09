@@ -438,11 +438,15 @@ class RollsCog(commands.Cog):
             if len(grouproll_users) == 0:
                 return
 
+            logging.info(f"group roll users approved")
+
             # Преобразуем ID из строки в число
             id_num = 822903067233878016
             
             # 2. Ищем канал (сначла в кэше, если нет — через API)
             channel = self.bot.get_channel(id_num) or await self.bot.fetch_channel(id_num)
+
+            logging.info(f"chanel get approved")
             
             winner_choice = random_choice(grouproll_users)
             winner_id = winner_choice[1]
