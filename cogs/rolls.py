@@ -89,7 +89,15 @@ class RollsCog(commands.Cog):
     @check_bot_author_permission()
     async def get_setver_id(self, ctx: discord.Interaction):
         await ctx.response.defer()
-        await ctx.followup.send(f"{ctx.channel.id}")
+        try:
+            channel = await bot.fetch_channel(822903067233878016)
+            await ctx.followup.send("Канал успешно получен из API Discord!")
+            await channel.send("Кстати, Айваз котакбас!")
+            
+        except discord.Forbidden:
+            await ctx.followup.send("У бота все-таки нет доступа к этому каналу.")
+        except discord.NotFound:
+            await ctx.followup.send("Канал с таким ID не существует.")
 
     @app_commands.command(name='pointsupd', description='обновление размера хранения сердечек')
     @check_bot_author_permission()
