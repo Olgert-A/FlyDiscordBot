@@ -404,9 +404,7 @@ class RollsCog(commands.Cog):
         asyncio.create_task(self.check_db_on_startup())
 
     async def check_db_on_startup(self):
-        logging.info("check db")
         await self.bot.wait_until_ready()
-        logging.info("check end")
         try:
             # Получаем текущий список участников из базы
             grouproll_users = get_rolls_db().grouproll_get_users()
@@ -416,54 +414,36 @@ class RollsCog(commands.Cog):
                 self.roulette_task = asyncio.create_task(self.finish_group_roll())
                     
         except Exception as e:
-            print(f"[Ошибка] Не удалось возобновить штурвал при старте: {e}")
+            logging.info(f"[Ошибка] Не удалось возобновить штурвал при старте: {e}")
     
     async def finish_group_roll(self):
         try:
-            logging.info("start group roll finish")
-            
-            # Ожидание 1 час (3600 секунд)
             await asyncio.sleep(60)
             current_task = asyncio.current_task()
             if self.roulette_task != current_task:
                 return
 
-            logging.info("task approved")
-            pass
-
             self.roulette_task = None
 
             grouproll_users = get_rolls_db().grouproll_get_users()
-            logging.info(f"group roll users: {len(grouproll_users)}")
             if len(grouproll_users) == 0:
                 return
 
-            logging.info(f"group roll users approved")
+            for _id, user_id, points in grouproll_users:
+                logging.info(f"user={user_id} points={points}")
 
-            # Преобразуем ID из строки в число
-            id_num = 822903067233878016
+            guild_id = 780923811264200754
+            channel_id = 822903067233878016
             
-            # 2. Ищем канал (сначла в кэше, если нет — через API)
-            channel = self.bot.get_channel(id_num) or await self.bot.fetch_channel(id_num)
-
-            logging.info(f"chanel get approved")
+            guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
+            channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
             
             winner_choice = random.choice(grouproll_users)
             winner_id = winner_choice[1]
-
             win_points = sum(points for _id, user_id, points in grouproll_users)
-
-            guild_id = 780923811264200754
-            guild = self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)
-            
-            # Получаем именно Member (участника сервера), у которого точно есть .nick
             winner = guild.get_member(winner_id) or await guild.fetch_member(winner_id)
-
-            logging.info(f"Юзер = {winner != None}")
             get_rolls_db().points_add(780923811264200754, winner_id, win_points)
             get_rolls_db().clear_grouproll()
-            grouproll_users = get_rolls_db().grouproll_get_users()
-            logging.info(f"Канал = {channel != None}")
             if channel:
                 await channel.send(f"""Голландский штурвал завершён безоговорочной победой {name(winner)}!""")
               
@@ -475,7 +455,6 @@ class RollsCog(commands.Cog):
     @app_commands.command(name='голландский_штурвал', description='Групповая рулетка всех сердечек')
     @check_server_id_permission()
     @check_channel_id_permission()
-    @check_bot_author_permission()
     async def group_roll(self, ctx: discord.Interaction):
         await ctx.response.defer()
 
