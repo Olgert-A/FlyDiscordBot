@@ -418,7 +418,7 @@ class RollsCog(commands.Cog):
     
     async def finish_group_roll(self):
         try:
-            await asyncio.sleep(60)
+            await asyncio.sleep(1200)
             current_task = asyncio.current_task()
             if self.roulette_task != current_task:
                 return
@@ -481,7 +481,7 @@ class RollsCog(commands.Cog):
             get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -user_pts)
             self.roulette_task = asyncio.create_task(self.finish_group_roll())
 
-            result = f"{name(ctx.user)} присоединился к групповому штурвалу со своими {user_pts} сердечками. Участники: "
+            result = f"{name(ctx.user)} присоединился к голландскому штурвалу со своими {user_pts} сердечками. Участники: "
             
             grouproll_users = get_rolls_db().grouproll_get_users()
             grouproll_members = []
@@ -492,7 +492,7 @@ class RollsCog(commands.Cog):
                     grouproll_members.append(member)
 
             result += ", ".join(name(member) for member in grouproll_members)
-            result += ". Жди розыгрыш через 20 минут от этого сообщения."
+            result += ". Розыгрыш через 20 минут."
             
             await ctx.followup.send(result)
                        
