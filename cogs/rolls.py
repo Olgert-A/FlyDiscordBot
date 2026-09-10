@@ -59,7 +59,7 @@ class RollsCog(commands.Cog):
         self.group_roll_index = -1
         self.roulette_task: asyncio.Task = None
         self.mine_users = []
-        self.mine_factor = [-1, -1, -0.5, -0.5, 0, 0, 0.25, 0.25, 0.5, 1]
+        self.mine_factor = [-1, -1, -0.5, -0.5, 0, 0, 0.5, 1, 2, 3]
         self.mine_shots = set()
         self.mine_roll_task: asyncio.Task = None
         self.risk_chances = [(90, 2), (80, 3), (70, 4), (60, 5), (50, 6)]
