@@ -253,7 +253,7 @@ class RollsCog(commands.Cog):
                 result += " Все поля открыты. Раунд казика завершен."
                 self.mine_users.clear()
                 self.mine_shots.clear()
-                if self.mine_roll_task and not self.mine_roll_task.done() 
+                if self.mine_roll_task and not self.mine_roll_task.done():
                     self.mine_roll_task.cancel() 
 
                 self.mine_roll_task = None
