@@ -237,7 +237,7 @@ class RollsCog(commands.Cog):
             self.mine_shots.add(mine_position)
             
             koef = self.mine_factor[mine_position]
-            points_to_add = koef * current_user_pts
+            points_to_add = int(koef * current_user_pts)
             self.mine_users.append(ctx.user.id)
             get_rolls_db().points_add(ctx.guild.id, ctx.user.id, points_to_add) 
 
