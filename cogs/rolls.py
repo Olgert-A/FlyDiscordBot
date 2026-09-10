@@ -247,7 +247,7 @@ class RollsCog(commands.Cog):
             elif koef < 0:
                 result += f"проигрывает {-points_to_add} сердечек."
             else:
-                result += f"попадает на коэффициент 0, ничего не получая. Ебать сосал, конечно."
+                result += f" ничего не получает. Ебать сосал, конечно."
             
             if len(self.mine_users) == len(self.mine_factor):
                 result += " Все поля открыты. Раунд казика завершен."
