@@ -59,7 +59,7 @@ class RollsCog(commands.Cog):
         self.group_roll_index = -1
         self.roulette_task: asyncio.Task = None
         self.mine_users = []
-        self.mine_factor = [1, 1, 1, 1, 1, 1, 1, 1, 1, -1]
+        self.mine_factor = [-1, -1, -0.5, -0.5, 0, 0, 0.25, 0.25, 0.5, 1]
         self.mine_shots = set()
         self.mine_roll_task: asyncio.Task = None
         self.risk_chances = [(90, 2), (80, 3), (70, 4), (60, 5), (50, 6)]
@@ -182,22 +182,13 @@ class RollsCog(commands.Cog):
     async def finish_mine_roll(self, guild_id: int, channel: discord.abc.Messageable):
         try:
             # Ожидание 1 час (3600 секунд)
-            await asyncio.sleep(3600)
+            await asyncio.sleep(1200)
 
             current_task = asyncio.current_task()
             if self.mine_roll_task != current_task:
                 return
 
-            result = "Никто не нашёл лузовое поле. Участники получают: "
-
-            users_pts_to_add = []
-            for user, id, pts in self.mine_users:
-                user_pts = get_rolls_db().points_get(guild_id, id)
-                pts_to_add = pts if pts <= user_pts else user_pts
-                users_pts_to_add.append(pts_to_add)
-                get_rolls_db().points_add(guild_id, id, pts_to_add)
-
-            result += " | ".join([f'{name(user)} +{users_pts_to_add[index]} сердечек' for index, (user, _, pts) in enumerate(self.mine_users)])
+            result = "Раунд казика завершён. Поля ставок перемешаны."
                             
             self.mine_users.clear()
             self.mine_shots.clear()
@@ -221,8 +212,8 @@ class RollsCog(commands.Cog):
         
             current_user_pts = get_rolls_db().points_get(ctx.guild.id, ctx.user.id)
     
-            if any(id == ctx.user.id for _, id, _ in self.mine_users):
-                await ctx.followup.send("Ты уже сделал ставку в этом казике! Ожидай хода других игроков.")
+            if any(user_id == ctx.user.id for user_id in self.mine_users):
+                await ctx.followup.send("Ты уже делал ставку в этом казике! Ожидай перезапуск.")
                 return
     
             if current_user_pts == 0:
@@ -242,50 +233,35 @@ class RollsCog(commands.Cog):
     
             if len(self.mine_users) == 0:
                 random.shuffle(self.mine_factor)
-    
-            if self.mine_roll_task and not self.mine_roll_task.done():
-                self.mine_roll_task.cancel()  # 2. Отменяем задачу
-                
-            # 3. Очищаем переменную в любом случае (даже если задача была завершена)
-            self.mine_roll_task = None
             
             self.mine_shots.add(mine_position)
-    
-            if self.mine_factor[mine_position] == 1:            
-                self.mine_users.append((ctx.user, ctx.user.id, current_user_pts))
-                self.mine_roll_task = asyncio.create_task(self.finish_mine_roll(ctx.guild.id, ctx.channel))    
-                await ctx.followup.send(f"{name(ctx.user)} успешно поставил {current_user_pts} сердечек на выигрышное поле №{mine_position}. Сердечки зачислятся на счёт через час, когда казик будет завершён.")
-                return
-            else:
-                get_rolls_db().points_add(ctx.guild.id, ctx.user.id, -current_user_pts)
-                
-                if len(self.mine_users) == 0:
-                    self.mine_shots.clear()
-                    await ctx.followup.send(f"{name(ctx.user)} сразу нашёл поле с лузом. Его ставка в {current_user_pts} сгорела. Казик завершён.")
-                    return
-                else:
-                    result = f"{name(ctx.user)} нашёл поле с лузом. Его ставка в {current_user_pts} пропорционально распределена между участниками. Казик завершён."
-                    
-                    user_pts = [pts for user, id, pts in self.mine_users]
-                    sum_user_pts = sum(user_pts)
-                    user_win_part = [int(current_user_pts * pts / sum_user_pts) for pts in user_pts]
-        
-                    self.mine_users = [
-                        (user, id, win_pts) for (user, id, pts), win_pts in zip(self.mine_users, user_win_part)
-                    ]
-        
-                    for user, id, win_pts in self.mine_users:
-                        get_rolls_db().points_add(ctx.guild.id, id, win_pts)
-        
-                    result += " Распределение сердечек: "
-                    result += " | ".join([f"{name(user)} +{win_pts} сердечек" for user, id, win_pts in self.mine_users])
-        
-                    self.mine_users.clear()
-                    self.mine_shots.clear()
-                    await ctx.followup.send(result)
-                    return
             
-            await ctx.followup.send("Miner roll test")
+            koef = self.mine_factor[mine_position]
+            points_to_add = koef * current_user_pts
+            self.mine_users.append(ctx.user.id)
+            get_rolls_db().points_add(ctx.guild.id, ctx.user.id, points_to_add) 
+
+            result = f"{name(ctx.user)} поставил {current_user_pts} сердечек на поле {mine_position} с коэффициентом {koef} и "
+            if koef > 0:
+                result += f"выигрывает {points_to_add} сердечек с коэффициентом {int(koef * 100)}%"
+            elif koef < 0:
+                result += f"проигрывает {-points_to_add} сердечек с коэффициентом {-int(koef * 100)}%"
+            else:
+                result += f"попадает на коэффициент 0, ничего не получая. Ебать сосал, конечно."
+            
+            if len(self.mine_users) == len(self.mine_factor):
+                result += " Все поля открыты. Раунд казика завершен."
+                self.mine_users.clear()
+                self.mine_shots.clear()
+                if self.mine_roll_task and not self.mine_roll_task.done() 
+                    self.mine_roll_task.cancel() 
+
+                self.mine_roll_task = None
+            elif len(self.mine_users) == 1:
+                result += " Раунд автоматически закончится через 20 минут."
+                self.mine_roll_task = asyncio.create_task(self.finish_mine_roll(ctx.guild.id, ctx.channel))
+
+            await ctx.followup.send(result)
             
         except Exception as e: # Если произошла ЛЮБАЯ ошибка, бот напишет её в чат
             import traceback
