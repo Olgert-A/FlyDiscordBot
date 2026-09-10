@@ -241,11 +241,11 @@ class RollsCog(commands.Cog):
             self.mine_users.append(ctx.user.id)
             get_rolls_db().points_add(ctx.guild.id, ctx.user.id, points_to_add) 
 
-            result = f"{name(ctx.user)} поставил {current_user_pts} сердечек на поле {mine_position} с коэффициентом {koef} и "
+            result = f"{name(ctx.user)} поставил {current_user_pts} сердечек на поле {mine_position} с коэффициентом {int(100*koef)}% и "
             if koef > 0:
-                result += f"выигрывает {points_to_add} сердечек с коэффициентом {int(koef * 100)}%"
+                result += f"выигрывает {points_to_add} сердечек."
             elif koef < 0:
-                result += f"проигрывает {-points_to_add} сердечек с коэффициентом {-int(koef * 100)}%"
+                result += f"проигрывает {-points_to_add} сердечек."
             else:
                 result += f"попадает на коэффициент 0, ничего не получая. Ебать сосал, конечно."
             
