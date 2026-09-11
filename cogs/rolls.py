@@ -159,7 +159,7 @@ class RollsCog(commands.Cog):
             
             embed = discord.Embed(
                 title="🚨 Ограбление провалилось!",
-                description=f"{name(author)} потерял **{stolen_amount}** 💔 в пользу **{name(target)}**!",
+                description=f"{name(author)} потерял **{penalty}** 💔 в пользу **{name(target)}**!",
                 color=discord.Color.red()
             )
 
