@@ -100,7 +100,7 @@ class RollsCog(commands.Cog):
         target_points = get_rolls_db().points_get(ctx.guild.id, target.id)
 
         if target_points < 1000:
-            await ctx.followup.send(f"Ты пытаешься ограбить бомжа **{name(target)}** с его сердечками < 1000? Соси, позорищё!")
+            await ctx.followup.send(f"Ты пытаешься ограбить бомжа **{name(target)}** с его сердечками < 1000? Соси, позорище!")
             return
 
         min_required = math.ceil(target_points * 0.01)
@@ -110,7 +110,7 @@ class RollsCog(commands.Cog):
             return
 
         # Накладываем КД (все проверки пройдены)
-        self.cooldown_buckets[author.id] = current_time + 3600  
+        self.cooldown_buckets[author.id] = current_time + 1200  
 
         # Логика игры
         max_steal = math.ceil(target_points * 0.20)
