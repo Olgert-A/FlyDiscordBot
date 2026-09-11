@@ -3,6 +3,8 @@ import datetime
 import discord
 import random
 import asyncio
+import math
+import time
 from discord import app_commands
 from discord.ext import commands
 from db.current import get_rolls_db
@@ -65,6 +67,86 @@ class RollsCog(commands.Cog):
         self.risk_chances = [(90, 2), (80, 3), (70, 4), (60, 5), (50, 6)]
         self.risk_users: dict[int, int] = {}
         self.risk_tasks: dict[int, asyncio.Task | None] = {}
+        self.cooldown_buckets = {}
+
+    
+    @app_commands.command(name="грабеж", description="Попробовать ограбить богатого пидора")
+    @app_commands.rename(target='цель')
+    @app_commands.describe(target="Пользователь, которого хочешь ограбить")
+    async def rob(self, ctx: discord.Interaction, target: discord.User):
+        await ctx.response.defer()
+        
+        author = ctx.user
+
+        if author.id == target.id:
+            # Для мгновенных проверок БЕЗ БД можно отвечать через response, если успеваете в 3 секунды
+            await ctx.followup.send("Ты не можешь грабить себя, зато можешь попробовать себе отсосать")
+            return
+
+     
+        current_time = time.time()
+        user_cd = cooldown_buckets.get(author.id, 0)
+        
+        if current_time < user_cd:
+            retry_after = user_cd - current_time
+            minutes = int(retry_after // 60)
+            seconds = int(retry_after % 60)
+            await ctx.followup.send(f"⏳ Ты не можешь грабить еще **{minutes}м {seconds}с**.")
+            return
+
+        # ---- ПОДКЛЮЧЕНИЕ К БД (Пример) ----
+        # Тут будут ваши await db.get_points(author.id) и т.д.
+        author_points = get_rolls_db().points_get(ctx.guild.id, author.id)
+        target_points = get_rolls_db().points_get(ctx.guild.id, target.id)
+
+        if target_points < 1000:
+            await ctx.followup.send(f"Ты пытаешься ограбить бомжа **{name(target)}** с его сердечками < 1000? Соси, позорищё!")
+            return
+
+        min_required = math.ceil(target_points * 0.01)
+        if author_points < min_required:
+            await ctx.followup.send(
+                f"❌ Чтобы ограбить **{name(target)}**, тебе надо иметь хотя бы **{min_required}** (1% от цели) сердечек.")
+            return
+
+        # Накладываем КД (все проверки пройдены)
+        cooldown_buckets[author.id] = current_time + 3600  
+
+        # Логика игры
+        max_steal = math.ceil(target_points * 0.20)
+        stolen_amount = random.randint(math.ceil(max_steal * 0.3), max_steal)
+        
+        base_penalty = math.ceil(stolen_amount * 0.8)
+
+        penalty = min(base_penalty, author_points)
+
+        ratio = min(author_points / target_points, 1.0)
+        success_chance = 30 + int(ratio * 20)
+
+        is_successful = random.randint(1, 100) <= success_chance
+
+        if is_successful:
+            # Тут будут ваши запросы на ОБНОВЛЕНИЕ БД: await db.update_points(...)
+            get_rolls_db().points_add(ctx.guild.id, author.id, stolen_amount)
+            get_rolls_db().points_add(ctx.guild.id, target.id, -stolen_amount)
+            
+            embed = discord.Embed(
+                title="🥷 Успешное ограбление!",
+                description=f"{name(author)} украл у {name(target)} **{stolen_amount}** 💔!",
+                color=discord.Color.green()
+            )
+        else:
+            get_rolls_db().points_add(ctx.guild.id, author.id, -penalty)
+            get_rolls_db().points_add(ctx.guild.id, target.id, penalty)
+            
+            embed = discord.Embed(
+                title="🚨 Ограбление провалилось!",
+                description=f"{name(author)} потерял **{name(target)}** 💔 в пользу жертвы!",
+                color=discord.Color.red()
+            )
+
+        # Финальный ответ (параметр ephemeral здесь должен совпадать с тем, что был в defer)
+        await ctx.followup.send(embed=embed)
 
     async def finish_user_risk_streak(self, user_id: int):
         try:
