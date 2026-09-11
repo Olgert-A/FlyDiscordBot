@@ -69,6 +69,24 @@ class RollsCog(commands.Cog):
         self.risk_tasks: dict[int, asyncio.Task | None] = {}
         self.cooldown_buckets = {}
 
+    @app_commands.command(name="сердечки-всех", description="Тир лист сердцеедов")
+    async def all_points(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+
+        users = ctx.channel.members
+        user_points = []
+
+        for user in users:
+            if user.bot:
+                continue
+                
+            user_points.append((user, get_rolls_db().points_get(ctx.guild.id, user.id)))
+
+        sorted_list = sorted(user_points, key=lambda item: item[1], reverse=True)
+        formatted_list = [f"{position+1}. {name(user)}: {points}" for position, (user, points) in enumerate(sorted_list)]
+        result = "\n".join(formatted_list)
+        await ctx.followup.send(result)
+    
     
     @app_commands.command(name="грабеж", description="Попробовать ограбить богатого пидора")
     @app_commands.rename(target='цель')
