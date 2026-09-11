@@ -85,7 +85,7 @@ class RollsCog(commands.Cog):
 
      
         current_time = time.time()
-        user_cd = cooldown_buckets.get(author.id, 0)
+        user_cd = self.cooldown_buckets.get(author.id, 0)
         
         if current_time < user_cd:
             retry_after = user_cd - current_time
@@ -110,7 +110,7 @@ class RollsCog(commands.Cog):
             return
 
         # Накладываем КД (все проверки пройдены)
-        cooldown_buckets[author.id] = current_time + 3600  
+        self.cooldown_buckets[author.id] = current_time + 3600  
 
         # Логика игры
         max_steal = math.ceil(target_points * 0.20)
